@@ -1,0 +1,24 @@
+.text-part {
+  align-items: stretch;
+  background-color: #111111;
+  height: 93vh;
+  position: relative;
+}
+
+
+.text-footer {
+  position: absolute;
+  background-color: #262626;
+  display: flex;
+  justify-content: flex-end;
+  align-content: center;
+  bottom: 0;
+  width: 100%;
+  height: 10%;
+}
+
+.visualization-part {
+  align-items: stretch;
+  height: 93vh;
+  position: relative;
+}

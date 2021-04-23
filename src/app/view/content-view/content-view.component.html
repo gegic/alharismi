@@ -1,0 +1,26 @@
+<div class="content"
+     [innerHTML]="!scene || !scene.content ? '' : scene.content" (click)="getRoute($event)"
+     *ngIf="!showLoadingSkeleton; else contentLoadingSkeleton"
+></div>
+<ng-template #contentLoadingSkeleton>
+  <div class="content">
+    <p-skeleton width="70%" height="2.5rem" styleClass="p-mt-4 p-mb-4"></p-skeleton>
+    <p-skeleton width="85%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="90%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="82%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="91%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="14%" height="1rem" styleClass="p-mb-4"></p-skeleton>
+    <p-skeleton width="81%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="24%" height="1rem" styleClass="p-mb-4"></p-skeleton>
+    <p-skeleton width="81%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="94%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="87%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="91%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="19%" height="1rem" styleClass="p-mb-4"></p-skeleton>
+    <p-skeleton width="82%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="89%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="17%" height="1rem" styleClass="p-mb-4"></p-skeleton>
+    <p-skeleton width="86%" height="1rem" styleClass="p-mb-2"></p-skeleton>
+    <p-skeleton width="43%" height="1rem" styleClass="p-mb-4"></p-skeleton>
+  </div>
+</ng-template>

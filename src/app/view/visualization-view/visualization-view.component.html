@@ -1,0 +1,40 @@
+<div class="visualization-content" #canvas></div>
+<div class="visualization-footer">
+  <div class="p-d-flex p-flex-row">
+          <span class="p-buttonset">
+            <button class="p-button p-button-info p-button-icon p-button-rounded"
+                    icon="pi pi-play"
+                    label="Play"
+                    pRipple
+                    pButton
+            ></button>
+            <button class="p-button p-button-info p-button-icon p-button-rounded"
+                    icon="pi pi-clock"
+                    label="Speed"
+                    (click)="op.toggle($event)"
+                    pRipple
+                    pButton
+            ></button>
+            <button class="p-button p-button-info p-button-icon p-button-rounded"
+                    icon="pi pi-refresh"
+                    label="Reset"
+                    [disabled]="true"
+                    pRipple
+                    pButton
+            ></button>
+          </span>
+  </div>
+  <p-overlayPanel [showCloseIcon]="true" appendTo="body" #op>
+    <ng-template pTemplate>
+      <p-inputNumber [min]=".5" [max]="3" mode="decimal" [minFractionDigits]="1" [maxFractionDigits]="1" [(ngModel)]="speed"></p-inputNumber>
+      <p-slider [min]=".5" [max]="3" [step]=".1" [(ngModel)]="speed"></p-slider>
+    </ng-template>
+  </p-overlayPanel>
+  <button class="p-button p-button-sm p-button-text p-button-secondary visualize-button"
+          label="OPEN IN PLAYGROUND"
+          icon="pi pi-external-link"
+          (click)="openInPlayground()"
+          pRipple
+          pButton
+  ></button>
+</div>

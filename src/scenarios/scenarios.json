@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Arrays",
+    "path": "arrays",
+    "description": "Array visualization",
+    "scenes": [
+      "start", "2"
+    ]
+  }
+]
