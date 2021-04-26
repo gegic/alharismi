@@ -10,116 +10,69 @@ import {defaultRadius, scenariosPath} from '../consts';
 import {DataHandler} from '../simulation/handlers/data-handler';
 import * as d3 from 'd3';
 import {SimulationNode} from '../simulation/basics/simulation-node';
-import {fpsCounter} from '../decorators/fps-counter';
 import {Selection} from 'd3-selection';
 import {SimulationText} from '../simulation/basics/simulation-text';
 import {SimulationLink} from '../simulation/basics/simulation-link';
 import {SimulationArray} from '../simulation/structures/array/simulation-array';
+import {NodeHandler} from '../simulation/handlers/node-handler';
+import {PositionHelper} from '../simulation/helpers/position-helper';
+import {ColorHelper} from '../simulation/helpers/color-helper';
+import {SimulationHandler} from '../simulation/handlers/simulation-handler';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ScenarioService {
 
-  nodes?: Selection<any, any, d3.BaseType, any>;
-  texts?: Selection<any, any, d3.BaseType, any>;
-  links?: Selection<any, any, d3.BaseType, any>;
-  bstLinks?: Selection<any, any, d3.BaseType, any>;
-  arrows?: Selection<any, any, d3.BaseType, any>;
-  arrays?: Selection<any, any, d3.BaseType, any>;
+  dataHandler?: DataHandler;
+  nodeHandler?: NodeHandler;
+  simulationHandler?: SimulationHandler;
+  canvas: BehaviorSubject<Selection<any, any, d3.BaseType, any> | undefined> =
+    new BehaviorSubject<Selection<any, any, d3.BaseType, any> | undefined>(undefined);
 
-  dataHandler: BehaviorSubject<DataHandler | undefined> = new BehaviorSubject<DataHandler | undefined>(undefined);
   currentScenario: BehaviorSubject<Scenario | undefined> = new BehaviorSubject<Scenario | undefined>(undefined);
   scenarios: Scenario[];
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: HttpClient) {
+  }
+
+  startSimulation(): void {
+    this.simulationHandler = new SimulationHandler();
+    this.nodeHandler = new NodeHandler(
+      new PositionHelper(),
+      new ColorHelper(),
+      this.canvas.getValue(),
+      this.simulationHandler
+    );
+
+    this.simulationHandler.setHandlers(this.nodeHandler);
+    this.simulationHandler.setupSimulation();
+  }
 
   getScenarios(): Observable<Scenario[]> {
     return this.httpClient.get<Scenario[]>(`${scenariosPath}/scenarios.json`);
   }
 
-  setupSimulation(): void {
-    d3.forceSimulation([])
-      .force('charge',
-        d3.forceManyBody()
-          .strength(-300)
-          .distanceMin(10)
-      )
-      .force('x',
-        d3.forceX()
-          .x((d: SimulationNode) => d.cx)
-          .strength(0.15)
-      )
-      .force('y',
-        d3.forceY()
-          .y((d: SimulationNode) => d.cy)
-          .strength(0.1)
-      )
-      .force(
-        'link',
-        d3.forceLink([])
-          .distance(10)
-          .strength(1)
-      )
-      .force(
-        'collision',
-        d3.forceCollide().radius(defaultRadius)
-      )
-      .alphaTarget(.5)
-      .on('tick', this.ticked);
+  get_level(): void {
+    const nodes = this.nodeHandler.generateNodes(5, this.isLevelComplete);
+    this.nodeHandler.add(nodes);
+    this.nodeHandler.draw();
+    this.simulationHandler.repaint();
   }
 
-  @fpsCounter(60)
-  ticked(): void {
-    this.nodes
-      .attr('cx', (d: SimulationNode) => d.x)
-      .attr('cy', (d: SimulationNode) => d.y);
-
-    this.texts
-      ?.attr('x', (d: SimulationText) => d.x)
-      ?.attr('y', (d: SimulationText) => d.y);
-
-    this.links
-      ?.attr('x1', (d: SimulationLink) => d.source.x)
-      ?.attr('y1', (d: SimulationLink) => d.source.y)
-      ?.attr('x2', (d: SimulationLink) => d.target.x)
-      ?.attr('y2', (d: SimulationLink) => d.target.y);
-
-    this.bstLinks
-      ?.attr('x1', (d: SimulationLink) => d.source.x)
-      ?.attr('y1', (d: SimulationLink) => d.source.y)
-      ?.attr('x2', (d: SimulationLink) => d.target.x)
-      ?.attr('y2', (d: SimulationLink) => d.target.y);
-
-    this.arrows
-      ?.attr('x1', (d: SimulationNode) => d.x)
-      ?.attr('y1', (d: SimulationNode) => d.y - 150)
-      ?.attr('x2', (d: SimulationNode) => d.x)
-      ?.attr('y2', (d: SimulationNode) => d.y - 100);
-
-    this.arrays
-      ?.attr('x', (d: SimulationArray) => d.x)
-      ?.attr('y', (d: SimulationArray) => d.y);
-  }
-
-  repaint(): void {
-
-    // this.dataHandler.drawFigures();
-    // window.buttonHandler.draw()
-    // window.linkHandler.draw() // must be after dataHandler has drawn
-    // window.circleManager.draw()
-
-    const svg = d3.select('svg');
-    svg.lower();
-
-    // if (window.camera) setTimeout(() => window.camera.reFocus(), 50)
-
-    this.nodes = svg.selectAll('.circle, .button');
-    this.texts = svg.selectAll('.circlenames, .circlevalues, .rootnames, .textnode, .buttontext, .textarea');
-    this.links = svg.selectAll('.default_link');
-    this.bstLinks = svg.selectAll('.BST_line');
-    this.arrows = svg.selectAll('.circlearrow');
-    this.arrays = svg.selectAll('.array');
+  isLevelComplete(ni: SimulationNode): void {
+    if (ni) {
+      ni.clicked();
+    }
+    if (ni && !ni.lockedGrid) {
+      ni.fx = undefined;
+      ni.fy = undefined;
+    }
+    // const complete = this.currentLevel.isComplete(n)
+    // if (complete) {
+    //   this.currentLevel.complete = true
+    //   this.getReadyForNextLevel(n)
+    // }
   }
 
 }

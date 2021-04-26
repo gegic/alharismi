@@ -1,39 +1,43 @@
 import {SimulationNode} from '../basics/simulation-node';
 import {defaultRadius} from '../../consts';
 import {Selection} from 'd3-selection';
-import {Drawable} from '../drawable';
 import * as d3 from 'd3';
-import {Injectable} from '@angular/core';
 import {SimulationArray} from '../structures/array/simulation-array';
 import {ArrayCell} from '../structures/array/array-cell';
 import {PositionHelper} from '../helpers/position-helper';
 import {ColorHelper} from '../helpers/color-helper';
+import {DrawableHandler} from './drawable-handler';
+import {SimulationHandler} from './simulation-handler';
 
-@Injectable()
-export class NodeHandler implements Drawable {
+export class NodeHandler implements DrawableHandler {
 
   positionHelper: PositionHelper;
   colorHelper: ColorHelper;
-  radius = defaultRadius;
+  simulationHandler: SimulationHandler;
+
+  readonly radius = defaultRadius;
   maxId = 0;
   decimalDigits = 0;
+
+  // todo
   quadtree: d3.Quadtree<SimulationNode>;
 
   nodes: SimulationNode[] = [];
   nodeElements: Selection<any, any, HTMLElement, any>;
   invisibleNodes: SimulationNode[] = [];
-  windowSize: number;
-  container: Selection<any, any, HTMLElement, any>;
 
-  draggedNode?: SimulationNode;
-  previouslyHoveredPlaceholders: Selection<any, any, any, any>[];
+  canvas: Selection<any, any, any, any>;
 
-  constructor(windowSize,
-              positionHelper: PositionHelper,
-              colorHelper: ColorHelper) {
-    this.windowSize = windowSize;
+  previouslyHoveredPlaceholders: Selection<any, any, any, any>[] = [];
+
+  constructor(positionHelper: PositionHelper,
+              colorHelper: ColorHelper,
+              canvas: Selection<any, any, any, any>,
+              simulationHandler: SimulationHandler) {
     this.positionHelper = positionHelper;
     this.colorHelper = colorHelper;
+    this.canvas = canvas;
+    this.simulationHandler = simulationHandler;
   }
 
   add(obj: undefined | SimulationNode | SimulationNode[]): SimulationNode | SimulationNode[] {
@@ -54,7 +58,6 @@ export class NodeHandler implements Drawable {
       .addAll(this.nodes);
 
     this.colorHelper.setColorScheme(values);
-    // todo this.draw()
     return obj;
   }
 
@@ -62,36 +65,32 @@ export class NodeHandler implements Drawable {
     return parseFloat((Math.random() * n - n / 2).toFixed(this.decimalDigits));
   }
 
-  draw(canvas: Selection<any, any, HTMLElement, any>): void {
+  draw(): void {
     const transitionEnterTime = 500;
     const transitionExitTime = 200;
 
-    // simulation.nodes(
-    //   this.circles.concat(this.invisible_circles)
-    // )
+    this.simulationHandler.simulation.nodes(this.nodes.concat(this.invisibleNodes));
 
-    this.nodeElements = canvas
+    this.nodeElements = this.canvas
       .selectAll('.circle')
       .data(this.nodes, (d: SimulationNode) => d.id)
       .join(
-        enter => {
-          enter
-            .append('circle')
-            .attr('r', 0)
+        (enter) => {
+          const cir = enter.append('circle');
+          cir.attr('r', 0)
             .attr('x', d => d.cx)
             .attr('y', d => d.cy)
             .attr('class', 'circle')
-            .on('mouseover', this.nodeMouseOver)
-            .on('mouseout', this.nodeMouseOut)
-            .on('click', this.nodeClick)
+            .on('mouseover', (d, i, nodes) => this.nodeMouseOver(d, i, nodes))
+            .on('mouseout', (d, i, nodes) => this.nodeMouseOut(d, i, nodes))
+            .on('click', (d) => this.nodeClick(d))
             // .on('contextmenu', d3.contextMenu(circleContextMenu))
             .call(
               d3.drag()
-                .on('drag', this.nodeDragged)
-                .on('end', this.nodeDragEnd)
-                .on('start', this.nodeDragStart)
+                .on('drag', (d, i, nodes) => this.nodeDragged(d as SimulationNode, i, nodes))
+                .on('end', (d, i, nodes) => this.nodeDragEnd(d as SimulationNode, i, nodes))
+                .on('start', (d, i, nodes) => this.nodeDragStart(d as SimulationNode, i, nodes))
             )
-            // all dynamic stuff, this should be in update as well.
             .attr('fill', (d) => this.colorHelper.getNodeColor(d))
             .style('stroke-width', d => d.highlighted ? 5 : 0)
             .style('stroke-dasharray', '5,3') // make the stroke dashed
@@ -104,10 +103,10 @@ export class NodeHandler implements Drawable {
             .transition()
             .duration(transitionEnterTime)
             .attr('r', this.radius);
-          return enter;
-        }, update => {
-          update
-            .attr('fill', (d) => this.colorHelper.getNodeColor(d))
+          return cir;
+        },
+        update => {
+          update.attr('fill', (d) => this.colorHelper.getNodeColor(d))
             .style('stroke-width', d => {
               // if (!d.validInBST) {
               //   return 5;
@@ -146,7 +145,6 @@ export class NodeHandler implements Drawable {
                 return 'green';
               }
             })
-
             .raise()
             // animation
             .attr('r', this.radius)
@@ -158,17 +156,15 @@ export class NodeHandler implements Drawable {
             .attr('r', this.radius);
           return update;
         },
-          exit => exit.remove()
+        exit => exit.remove()
       );
-
-    canvas
+    this.canvas
       .selectAll('.circlevalues')
       .data(this.nodes, (d: SimulationNode) => d.id)
       .join(
         enter => {
-          enter
-            .append('text')
-            .attr('class', 'circlevalues')
+          const text = enter.append('text');
+          text.attr('class', 'circlevalues')
             .attr('dy', d => this.radius / 4)
             .text(d => d.isValueVisible ? d.value : '')
             .style('text-anchor', 'middle')
@@ -182,9 +178,8 @@ export class NodeHandler implements Drawable {
             .transition()
             .duration(transitionEnterTime)
             .style('opacity', 1);
-          return enter;
-        },
-        update => {
+          return text;
+        }, update => {
           update
             .text(d => d.isValueVisible ? d.value : '')
             .attr('font-size', d => this.calculateFontSize(d.value.toString()))
@@ -193,51 +188,48 @@ export class NodeHandler implements Drawable {
         }, exit => exit.remove()
       );
 
-    canvas
+    this.canvas
       .selectAll('.circlenames')
       .data(this.nodes, (d: SimulationNode) => d.id)
       .join(
         enter => {
-          enter
-            .append('text')
-            .attr('class', 'circlenames')
+          const text = enter.append('text');
+          text.attr('class', 'circlenames')
             .attr('dx', (d) => d.isPlaceholder ? 0 : -40 / 2)
             .attr('dy', (d) => d.isPlaceholder ? 40 / 8 : 40 / 4)
             .style('text-anchor', 'middle')
             .attr('pointer-events', 'none')
             .attr('font-size', 0)
-            .text(d => !d.isPlaceholder ? d.id : 'null')
-            // enter animation
+            .text(d => !d.isPlaceholder ? `#${d.id}` : 'null')
             .transition()
             .duration(transitionEnterTime)
             .attr('font-size', 16);
-          return enter;
+          return text;
         }, update => {
           update
-            .text(d => !d.isPlaceholder ? d.id : 'null')
+            .text(d => !d.isPlaceholder ? `#${d.id}` : 'null')
             .raise();
           return update;
         }, exit => exit.remove()
       );
 
-    canvas
+    this.canvas
       .selectAll('.circlearrow')
       .data(this.nodes, (d: SimulationNode) => d.id)
       .join(
         (enter: Selection<d3.EnterElement, SimulationNode, any, any>) => {
-          const node = enter.datum();
-          enter
-            .append('line')
-            .attr('class', 'circlearrow')
-            .attr('x1', node.x)
-            .attr('y1', node.y - 150)
-            .attr('x2', node.x)
-            .attr('y2', node.y - 100)
+          const line = enter.append('line');
+
+          line.attr('class', 'circlearrow')
+            .attr('x1', d => d.x)
+            .attr('y1', d => d.y - 150)
+            .attr('x2', d => d.x)
+            .attr('y2', d => d.y - 100)
             .attr('stroke', 'black')
             .attr('stroke-width', 5)
             .attr('opacity', d => d.drawArrow ? 0.5 : 0)
             .attr('marker-end', 'url(#Triangle)');
-          return enter;
+          return line;
         }, update => {
           update
             .attr('opacity', d => d.drawArrow ? 0.5 : 0)
@@ -246,24 +238,26 @@ export class NodeHandler implements Drawable {
         }, exit => exit.remove()
       );
 
-    canvas
+    this.canvas
       .selectAll('.rootnames')
       .data(this.nodes, (d: SimulationNode) => d.id)
       .join(
-        enter =>
-          enter.append('text')
-            .attr('class', 'rootnames')
-            .attr('dx', d => 0)
-            .attr('dy', d => -40 * 1.1)
+        enter => {
+          const text = enter.append('text');
+          text.attr('class', 'rootnames')
+            .attr('dx', 0)
+            .attr('dy', -40 * 1.1)
             .style('text-anchor', 'middle')
             .attr('pointer-events', 'none')
             .attr('font-size', 32)
-            .text(d => d.lockedGraph !== undefined && d.lockedGraph.root === d ? 'root' : ''),
-          update =>
+            .text(d => d.lockedGraph !== undefined && d.lockedGraph.root === d ? 'root' : '');
+          return text;
+        }, update => {
           update
             .text(d => d.lockedGraph !== undefined && d.lockedGraph !== null && d.lockedGraph.root === d ? 'root' : '')
-            .raise(),
-          exit => exit.remove()
+            .raise();
+          return update;
+        }, exit => exit.remove()
       );
   }
 
@@ -314,10 +308,6 @@ export class NodeHandler implements Drawable {
     if (d.isPlaceholder && d.lockedGraph.root !== d) {
       return;
     }
-    if (node.classList.contains('array')) {
-      (circle.data()[0] as SimulationArray).setTransform(d3.event.x, d3.event.y);
-      return;
-    }
     this.previouslyHoveredPlaceholders.forEach(c => c.attr('fill', 'white'));
     this.previouslyHoveredPlaceholders = [];
 
@@ -342,7 +332,7 @@ export class NodeHandler implements Drawable {
     d.fx = d3.event.x;
     d.fy = d3.event.y;
 
-    this.draggedNode = d;
+    this.simulationHandler.draggedNode = d;
   }
 
   nodeDragStart(d: SimulationNode, i: number, nodes: Element[] | ArrayLike<Element>): void {
@@ -365,7 +355,7 @@ export class NodeHandler implements Drawable {
     if (!d) {
       d3.selectAll('line').attr('pointer-events', 'auto');
       d3.selectAll('.circle').attr('pointer-events', 'auto');
-      this.draggedNode = null;
+      this.simulationHandler.draggedNode = null;
       return;
     }
 
@@ -385,25 +375,25 @@ export class NodeHandler implements Drawable {
 
     if (distanceDragged < 20) {
       // short drag, do nothing
-      if (this.draggedNode && !this.draggedNode.lockedGrid) {
+      if (this.simulationHandler.draggedNode && !this.simulationHandler.draggedNode.lockedGrid) {
         d.fx = undefined;
         d.fy = undefined;
       }
 
-      this.draggedNode = null;
+      this.simulationHandler.draggedNode = null;
       d.clicked();
       return;
     }
 
     d3.select(nodes[i]).attr('pointer-events', 'auto');
 
-    if (this.draggedNode) {
+    if (this.simulationHandler.draggedNode) {
       // are we dragging a node
 
       // TODO
 
-      // if (this.draggedNode.lockedGraph) {
-      //   const tree = this.draggedNode.lockedGraph;
+      // if (this.simulationHandler.draggedNode.lockedGraph) {
+      //   const tree = this.simulationHandler.draggedNode.lockedGraph;
       //   const treeNode = tree.d3tree.descendants().filter(n => n.data === d)[0];
       //
       //   if (treeNode) {
@@ -449,7 +439,8 @@ export class NodeHandler implements Drawable {
         d.fx = undefined;
         d.fy = undefined;
       }
-      if (!this.draggedNode.isPlaceholder) {
+      if (!this.simulationHandler.draggedNode.isPlaceholder) {
+        console.log('dragended1');
         this.nodes
           .filter((nd: SimulationNode) => nd.isPlaceholder)
           .some((nd: SimulationNode) => {
@@ -491,26 +482,26 @@ export class NodeHandler implements Drawable {
     }
     if (d) {
       d.setTransform(d3.event.x, d3.event.y);
+      this.simulationHandler.repaint();
     }
     d3.selectAll('line').attr('pointer-events', 'auto');
     d3.selectAll('.circle').attr('pointer-events', 'auto');
-    if (this.draggedNode && !this.draggedNode.lockedGrid) {
+    if (this.simulationHandler.draggedNode && !this.simulationHandler.draggedNode.lockedGrid) {
       d.fx = undefined;
       d.fy = undefined;
     }
-    this.draggedNode = null;
+    this.simulationHandler.draggedNode = null;
   }
 
   remove(obj: SimulationNode | SimulationNode[]): void {
     if (Array.isArray(obj)) {
       obj.forEach(d => this.removeNode(d));
       this.quadtree.removeAll(obj);
-      // todo this.draw();
     } else {
       this.removeNode(obj);
       this.quadtree.remove(obj);
-      // todo this.draw();
     }
+    this.draw();
     this.quadtree = d3.quadtree<SimulationNode>().x((d: SimulationNode) => d.x).y((d: SimulationNode) => d.y).addAll(this.nodes);
   }
 
@@ -522,14 +513,14 @@ export class NodeHandler implements Drawable {
   }
 
   clear(): void {
-    this.quadtree.removeAll(this.quadtree.data())
+    this.quadtree.removeAll(this.quadtree.data());
     this.nodes = [];
     this.invisibleNodes = [];
     // todo repaint()
   }
 
   getRandomNode(noRoot: boolean): SimulationNode {
-    const randomNodes = this.nodes.filter(d => !d.isPlaceholder && !(d.children && !d.parent))
+    const randomNodes = this.nodes.filter(d => !d.isPlaceholder && !(d.children && !d.parent));
     return randomNodes[Math.floor(Math.random() * (randomNodes.length - 1))];
   }
 
@@ -548,13 +539,6 @@ export class NodeHandler implements Drawable {
     }
   }
 
-  delete(): void {
-    if (this.container) {
-      this.container.remove();
-      this.container = null;
-    }
-  }
-
   generateNodes(n: number, onClick: (nodeInfo: SimulationNode) => void): SimulationNode[] {
     const nodes: SimulationNode[] = [];
     for (let i = 0; i < n; ++i) {
@@ -563,21 +547,12 @@ export class NodeHandler implements Drawable {
         continue;
       }
       const pos = this.positionHelper.createRandomPointOnCircumference([0, 0], 1);
-      nodes.push(
-        new SimulationNode(
-          rand,
-          this.maxId++,
-          pos[0],
-          pos[1]
-        )
-      );
+      const node = new SimulationNode(rand, this.maxId++, pos[0] + 0, pos[1] + 0);
+      nodes.push(node);
     }
     nodes.forEach(c => {
       c.onClick = onClick;
     });
-    this.add(nodes);
     return nodes;
   }
-
-
 }

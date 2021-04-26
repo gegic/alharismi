@@ -1,7 +1,6 @@
 import {Selection} from 'd3-selection';
 import {Injectable} from '@angular/core';
 
-@Injectable()
 export class DataHandler {
   levelState = 0;
   drawableList = [];

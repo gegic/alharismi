@@ -7,7 +7,7 @@ import * as d3 from 'd3';
 
 export class SimulationNode implements SimulationNodeDatum {
   radius = defaultRadius;
-  isValueVisible = false;
+  isValueVisible = true;
   isPlaceholder = false;
   noCollision = false;
   isInteractable = true;
@@ -39,6 +39,8 @@ export class SimulationNode implements SimulationNodeDatum {
   constructor(value: number, id: number, x: number, y: number) {
     this.value = value;
     this.id = id;
+    this.cx = x;
+    this.cy = y;
     this.x = x;
     this.y = y;
   }

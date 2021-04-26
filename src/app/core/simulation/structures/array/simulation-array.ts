@@ -4,6 +4,7 @@ import {ArrayCell} from './array-cell';
 
 export class SimulationArray {
 
+  id: number;
   size: number;
   cellWidth: number;
   cellHeight: number;
@@ -17,7 +18,8 @@ export class SimulationArray {
   name: string;
   container?: Selection<any, any, any, any>;
 
-  constructor(size: number, descriptor: string, x: number, y: number, name = 'Array'){
+  constructor(id: number, size: number, descriptor: string, x: number, y: number, name = 'Array'){
+    this.id = id;
     this.size = size;
     this.cellWidth = 100;
     this.cellWidth = 100;
@@ -32,13 +34,35 @@ export class SimulationArray {
     this.name = name;
   }
 
+  delete(): void {
+    if (this.container) {
+      this.container.transition().duration(500).style('opacity', 0).remove();
+    }
+  }
+
+  add(nodes: SimulationNode[]): void {
+    nodes.forEach((n, i) => this.data[i].addNode(n));
+  }
+
+  nodeAt(i: number): SimulationNode {
+    if (i === this.data.length) {
+      return null;
+    }
+    if (this.data[i].node) {
+      return this.data[i].node;
+    }
+    else {
+      return this.nodeAt(i + 1);
+    }
+  }
+
   setTransform(x: number, y: number): void {
     this.x = x;
     this.y = y;
     this.container.attr('transform', 'translate(' + (this.x) + ',' + this.y + ')'); // set start position
-    // this.data.filter((d: ArrayCell) => !!d.node).forEach((d: ArrayCell) => {
-    //   d.node.fx = this.x + d.x + d.wi / 2
-    //   d.node.fy = d.height / 2 + temp.y
-    // })
+    this.data.filter((d: ArrayCell) => !!d.node).forEach((d: ArrayCell) => {
+      d.node.fx = this.x + d.x + d.width / 2;
+      d.node.fy = d.height / 2 + this.y;
+    });
   }
 }

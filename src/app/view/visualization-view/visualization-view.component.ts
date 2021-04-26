@@ -4,11 +4,8 @@ import {BehaviorSubject} from 'rxjs';
 import * as d3 from 'd3';
 import {Selection} from 'd3-selection';
 import {SimulationNode} from '../../core/simulation/basics/simulation-node';
-import {defaultRadius} from '../../core/consts';
 import {SimulationLink} from '../../core/simulation/basics/simulation-link';
-import {SimulationNodeDatum} from 'd3-force';
-import {ticked} from '../../core/d3-utils/ticked';
-import {SimulationText} from '../../core/simulation/basics/simulation-text';
+import {ScenarioService} from '../../core/services/scenario.service';
 @Component({
   selector: 'app-visualization-view',
   templateUrl: './visualization-view.component.html',
@@ -23,26 +20,22 @@ export class VisualizationViewComponent implements AfterViewInit {
   height = 500;
 
   svg: Selection<any, any, null, undefined>;
-  nodes = [];
-  links: SimulationLink[];
-
-  draggedNode: SimulationNode;
 
   @ViewChild('canvas')
-  canvas: ElementRef<HTMLDivElement>;
+  canvasElement: ElementRef<HTMLDivElement>;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router,
+              private scenarioService: ScenarioService) { }
 
   ngAfterViewInit(): void {
 
-    this.svg = d3.select(this.canvas.nativeElement).append('svg')
-      .attr('height', '100%')
-      .attr('width', '100%')
-      .style('background', '#282828');
-
-    this.addFilters();
-    this.setupSimulation();
-
+    this.setupSvg();
+    const g = this.svg
+      .append('g')
+      .attr('class', 'canvas');
+    this.scenarioService.canvas.next(g);
+    this.scenarioService.startSimulation();
+    this.scenarioService.get_level();
   }
 
   openInPlayground(): void {
@@ -53,17 +46,15 @@ export class VisualizationViewComponent implements AfterViewInit {
     window.open(url, '_blank');
   }
 
-  addFilters(): void {
+  setupSvg(): void {
+    this.svg = d3.select(this.canvasElement.nativeElement).append('svg')
+      .attr('height', '100%')
+      .attr('width', '100%')
+      .style('background', '#282828');
     this.svg.append('filter')
       .attr('id', 'blur')
       .append('feGaussianBlur')
       .attr('stdDeviation', 5);
-  }
-
-  setupSimulation(): void {
-    const alpha = .5;
-    const fpsTextElement = new SimulationText('FPS', parseInt(this.svg.attr('width'), 10) * 0.95,
-      parseInt(this.svg.attr('height'), 10) * 0.95);
   }
 
   get speed(): number {

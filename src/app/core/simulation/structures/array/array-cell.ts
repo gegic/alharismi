@@ -1,4 +1,5 @@
 import {SimulationNode} from '../../basics/simulation-node';
+import {SimulationArray} from './simulation-array';
 
 export class ArrayCell {
   x: number;
@@ -8,8 +9,11 @@ export class ArrayCell {
   index: number;
   color: string;
   node?: SimulationNode;
+  hoveringNode?: SimulationNode;
+  parent: SimulationArray;
 
-  constructor(x: number, y: number, width: number, height: number, index: number) {
+  constructor(parent: SimulationArray, x: number, y: number, width: number, height: number, index: number) {
+    this.parent = parent;
     this.x = x;
     this.y = y;
     this.width = width;
@@ -23,6 +27,8 @@ export class ArrayCell {
   addNode(node: SimulationNode): void {
     this.node = node;
     node.lockedGrid = this;
+    node.fx = this.parent.x + this.x + this.width / 2;
+    node.fy = this.height / 2 + this.parent.y;
   }
 
   removeNode(): SimulationNode | null {
@@ -32,6 +38,9 @@ export class ArrayCell {
     const node = this.node;
     node.lockedGrid = undefined;
     this.node = undefined;
+    node.fx = undefined;
+    node.fy = undefined;
     return node;
   }
+
 }

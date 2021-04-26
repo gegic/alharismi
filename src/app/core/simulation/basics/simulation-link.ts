@@ -1,10 +1,9 @@
 import {SimulationLinkDatum, SimulationNodeDatum} from 'd3-force';
 import {SimulationNode} from './simulation-node';
-import {Drawable} from '../drawable';
 import {Selection} from 'd3-selection';
 import * as d3 from 'd3';
 
-export class SimulationLink implements SimulationLinkDatum<SimulationNode>, Drawable {
+export class SimulationLink implements SimulationLinkDatum<SimulationNode> {
   strokeWidth = 10;
   visible = true;
   z = -1;
