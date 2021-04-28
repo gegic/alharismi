@@ -71,7 +71,7 @@ export class ScenarioService {
     this.nodeHandler.add(nodes);
     this.nodeHandler.draw();
     const arr = this.arrayHandler.createArray(10);
-    arr.setLength(this.simulationHandler, 10);
+    arr.setLength(10);
     this.arrayHandler.add(arr);
     this.simulationHandler.repaint();
   }

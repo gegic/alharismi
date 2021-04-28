@@ -1,7 +1,10 @@
 import {DrawingBehavior} from './drawing-behavior';
 import {ArrayCell} from '../../structures/array/array-cell';
 import * as d3 from 'd3';
-export class ArrayCellDrawing implements DrawingBehavior<ArrayCell>{
+export class ArrayCellDrawing implements DrawingBehavior<ArrayCell> {
+
+  color = 'white';
+
   enter(enterElement: d3.Selection<d3.EnterElement, ArrayCell, any, any>): d3.Selection<d3.BaseType, ArrayCell, any, any> {
     const arrayCell = enterElement.append('g')
       .attr('class', 'array-cell');
@@ -13,7 +16,7 @@ export class ArrayCellDrawing implements DrawingBehavior<ArrayCell>{
       .attr('dy', 125)
       .text((d: ArrayCell) => d.toString())
       .attr('font-size', 25)// font size
-      .style('fill', 'white')
+      .style('fill', d => d.color)
       .style('text-anchor', 'middle');
 
     arrayCell

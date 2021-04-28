@@ -75,9 +75,30 @@ export class NodeHandler implements DrawableHandler {
     this.canvas
       .selectAll('.node')
       .data(this.nodes, (d: SimulationNode) => d.id)
-      .join(enter => enter.datum()?.enter(enter),
-        update => update.datum()?.update(update),
-        exit => exit.datum()?.exit(exit));
+      .join(this.performEnter,
+        this.performUpdate,
+        this.performExit);
+  }
+
+  performEnter(enterElement: d3.Selection<d3.EnterElement, SimulationNode, any, any>): Selection<d3.BaseType, SimulationNode, any, any> {
+    if (enterElement.data().length === 1) {
+
+    }
+    return undefined;
+  }
+
+  performUpdate(updateElement: d3.Selection<d3.BaseType, SimulationNode, any, any>): Selection<d3.BaseType, SimulationNode, any, any> {
+    if (updateElement.data().length > 0) {
+      return updateElement.datum().update(updateElement);
+    }
+    return undefined;
+  }
+
+  performExit(exitElement: d3.Selection<d3.BaseType, SimulationNode, any, any>): Selection<d3.BaseType, SimulationNode, any, any> {
+    if (exitElement.data().length > 0) {
+      return exitElement.datum().exit(exitElement);
+    }
+    return undefined;
   }
 
   remove(obj: SimulationNode | SimulationNode[]): void {

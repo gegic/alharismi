@@ -27,6 +27,7 @@ export class SimulationArray {
   isStatic: boolean;
   descriptor: string;
 
+  simulationHandler: SimulationHandler;
   drawingBehavior: DrawingBehavior<SimulationArray>;
   dragBehavior: DragBehavior<SimulationArray>;
   contextMenu: ContextMenuBehavior;
@@ -34,6 +35,7 @@ export class SimulationArray {
   constructor(drawingBehavior: DrawingBehavior<SimulationArray>,
               dragBehavior: DragBehavior<SimulationArray>,
               contextMenu: ContextMenuBehavior,
+              simulationHandler: SimulationHandler,
               id: number,
               size: number,
               x: number,
@@ -77,7 +79,7 @@ export class SimulationArray {
     });
   }
 
-  makeGrid(simulationHandler: SimulationHandler, count: number): void {
+  makeGrid(count: number): void {
     let xpos = (this.cellWidth + this.cellWidth / 20) * this.data.length;
 
     const newSize = this.data.length + count;
@@ -85,20 +87,20 @@ export class SimulationArray {
     for (let column = this.data.length; column < newSize; column++) {
       const cell = new ArrayCell(
         new ArrayCellDrawing(),
-        new ArrayCellMouse(simulationHandler),
+        new ArrayCellMouse(this.simulationHandler),
         this, xpos,
         0,
         this.cellWidth,
         this.cellHeight,
         column
       );
-      this.data.push();
+      this.data.push(cell);
       // increment the x position. I.e. move it over by 50 (width variable)
       xpos += this.cellWidth + this.cellWidth / 20; // and a little bit of margin
     }
   }
 
-  setLength(simulationHandler: SimulationHandler, length: number): void {
+  setLength(length: number): void {
     this.size = length;
 
     if (length < this.data.length) {
@@ -114,7 +116,7 @@ export class SimulationArray {
       this.data = this.data.splice(0, length);
     }
     else {
-      this.makeGrid(simulationHandler, length - this.data.length);
+      this.makeGrid(length - this.data.length);
     }
   }
 

@@ -31,6 +31,7 @@ export class ArrayHandler implements DrawableHandler {
       new ArrayDrawing(),
       new ArrayDrag(),
       new ArrayContextMenu(),
+      this.simulationHandler,
       this.maxId++,
       size,
       0,

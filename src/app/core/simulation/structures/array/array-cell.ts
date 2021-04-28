@@ -14,7 +14,6 @@ export class ArrayCell {
   width: number;
   height: number;
   index: number;
-  color: string;
   node?: SimulationNode;
   hoveringNode?: SimulationNode;
   parent: SimulationArray;
@@ -91,5 +90,11 @@ export class ArrayCell {
     this.mouseBehavior.mouseOut(this, i, cells);
   }
 
+  set color(color: string) {
+    this.drawingBehavior.color = color;
+  }
 
+  get color(): string {
+    return this.drawingBehavior.color;
+  }
 }
