@@ -26,7 +26,9 @@ export class ArrayCell {
 
   addNode(node: SimulationNode): void {
     this.node = node;
+    this.hoveringNode = node;
     node.lockedGrid = this;
+    node.hoveringGrid = this;
     node.fx = this.parent.x + this.x + this.width / 2;
     node.fy = this.height / 2 + this.parent.y;
   }
@@ -37,10 +39,16 @@ export class ArrayCell {
     }
     const node = this.node;
     node.lockedGrid = undefined;
+    node.hoveringGrid = undefined;
     this.node = undefined;
+    this.hoveringNode = undefined;
     node.fx = undefined;
     node.fy = undefined;
     return node;
+  }
+
+  toString(): string {
+    return `${parent.name}[${this.index}]`;
   }
 
 }

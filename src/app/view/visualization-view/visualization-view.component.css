@@ -22,3 +22,12 @@
   padding: 2px;
 }
 
+::ng-deep .canvas {
+  font-family: 'Courier New', sans-serif;
+  font-weight: 500;
+}
+
+::ng-deep .canvas text {
+  user-select: none;
+  pointer-events: none;
+}

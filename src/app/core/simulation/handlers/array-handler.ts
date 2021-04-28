@@ -23,8 +23,8 @@ export class ArrayHandler implements DrawableHandler {
     this.canvas = canvas;
   }
 
-  createArray(size: number, descriptor: string): SimulationArray {
-    return new SimulationArray(this.maxId++, size, descriptor, 0, 0);
+  createArray(size: number, descriptor?: string): SimulationArray {
+    return new SimulationArray(this.maxId++, size, 0, 0, descriptor);
   }
 
   add(array: SimulationArray): void {
@@ -32,59 +32,87 @@ export class ArrayHandler implements DrawableHandler {
   }
 
   draw(): void {
+
     const arrayElements = this.canvas
       .selectAll('.array')
       .data(this.arrays, (arr: SimulationArray) => arr.id)
-      .join('g')
-        .attr('class', 'array')
-        .attr('transform', arr => `translate(${arr.x}, ${arr.y})`);
-    arrayElements.selectAll()
-      .call(d3.drag().on('drag', (arr, i, arrays) => this.arrayDragged(arr as SimulationArray, i, arrays)));
+      .join(enter => {
+        const arrayElement = enter.append('g')
+          .attr('class', 'array')
+          .attr('transform', arr => `translate(${arr.x}, ${arr.y})`)
+          .style('cursor', 'pointer')
+          .call(d3.drag()
+            .on('drag', (arr: SimulationArray, i: number, arrays: Element[] | ArrayLike<Element>) =>
+              this.arrayDragged(arr, i, arrays))
+            .on('start', (_, i, arrays) =>
+              d3.select(arrays[i]).style('cursor', 'grabbing'))
+            .on('end', (_, i, arrays) =>
+              d3.select(arrays[i]).style('cursor', null)));
 
-    arrayElements.append('text')
-      .attr('dx', arr => (arr.size * arr.cellWidth) / 2)
-      .attr('dy', -25)
-      .text(arr => arr.descriptor)
-      .attr('font-size', 30)// font size
-      .style('text-anchor', 'middle')
-      .attr('pointer-events', 'none');
+        arrayElement
+          .append('rect')
+          .attr('class', 'array-bg')
+          .attr('x', -25)
+          .attr('y', -60)
+          .attr('width', (arr: SimulationArray) => arr.size * (arr.cellWidth + arr.cellWidth / 20) + 45)
+          .attr('height', 200)
+          .attr('rx', 25)
+          .attr('ry', 25)
+          .attr('stroke', 'white')
+          .attr('stroke-dasharray', '10')
+          .attr('stroke-width', '3')
+          .style('opacity', .8)
+          .lower();
 
-    const cells = arrayElements.selectAll('.array-cell')
-      .data(d => d.data)
-      .join('g');
-      //   .on('contextmenu', d3.contextMenu(arrayContextMenu))
+        arrayElement
+          .append('text')
+          .attr('class', 'array-title')
+          .attr('dx', arr => (arr.size * arr.cellWidth) / 2)
+          .attr('dy', -25)
+          .text(arr => arr.descriptor)
+          .attr('font-size', 30)
+          .style('fill', 'white')
+          .style('text-anchor', 'middle')
+          .attr('pointer-events', 'none');
 
-    cells.append('text')
-      .attr('class', 'array-text')
-      .attr('dx', (d) => d.x + d.width / 2)
-      .attr('dy', 125)
-      .text(d => d.toString())
-      .attr('font-size', 25)// font size
-      .style('text-anchor', 'middle')
-      .attr('pointer-events', 'none');
+        const cells = arrayElement
+          .selectAll('.array-cell')
+          .data((d: SimulationArray) => d.data, (cell: ArrayCell) => cell.index)
+          .join('g')
+          .attr('class', 'array-cell');
 
-    const rectangles = cells.append('rect')
-      .attr('class', 'array-cell')
-      .attr('x', d => d.x)
-      .attr('y', d => d.y)
-      .attr('rx', 25)
-      .attr('ry', 25)
-      .attr('width', d => d.width)
-      .attr('height', d => d.height)
-      .style('fill', d => d.color)
-      .style('opacity', 0)
-      .style('stroke-width', 5)
-      .on('mouseover', function (d) {
+        cells
+          .append('text')
+          .attr('class', d => 'array-cell-name')
+          .attr('dx', (d) => d.x + d.width / 2)
+          .attr('dy', 125)
+          .text((d: ArrayCell) => d.toString())
+          .attr('font-size', 25)// font size
+          .style('fill', 'white')
+          .style('text-anchor', 'middle');
 
-      })
-      .on('mouseout', function (d) {
+        cells
+          .append('rect')
+          .attr('class', d => 'array-cell-container')
+          .attr('x', d => d.x)
+          .attr('y', d => d.y)
+          .attr('rx', 25)
+          .attr('ry', 25)
+          .attr('width', d => d.width)
+          .attr('height', d => d.height)
+          .style('fill', d => d.color)
+          .style('opacity', .5)
+          .style('stroke-width', 5)
+          .on('mouseover', (d: ArrayCell) => this.arrayCellMouseOver(d))
+          .on('mouseout', (d: ArrayCell) => this.arrayCellMouseOut(d));
+        return arrayElement;
+      });
 
-      })
-      .transition().duration(500).style('opacity', 0.5)
-    cells.lower()
+    arrayElements.lower();
+
   }
 
-  arrayDragged(arr: SimulationArray, i: number, nodes: Element[] | ArrayLike<Element>): void {
+  arrayDragged(arr: SimulationArray, i: number, arrays: Element[] | ArrayLike<Element>): void {
     arr.setTransform(d3.event.x, d3.event.y);
     this.simulationHandler.repaint();
   }
@@ -97,11 +125,12 @@ export class ArrayHandler implements DrawableHandler {
       return;
     }
 
-    this.simulationHandler.draggedNode.lock = d
+    this.simulationHandler.draggedNode.hoveringGrid = d;
 
-    d.hovering_node = draggedNode
-    draggedNode.fx = temp.x + d.x + d.width / 2
-    draggedNode.fy = d.height / 2 + temp.y
+    d.hoveringNode = this.simulationHandler.draggedNode;
+    this.simulationHandler.draggedNode.fx = d.parent.x + d.x + d.width / 2;
+    this.simulationHandler.draggedNode.fy = d.height / 2 + d.parent.y;
+
     // now check if array is valid and color it accordingly
   }
 
@@ -111,11 +140,13 @@ export class ArrayHandler implements DrawableHandler {
     if (!this.simulationHandler.draggedNode) {
       return;
     }
-    if (d.hovering_node !== d.locked_node) {
-      d.hovering_node = d.locked_node
+    if (d.hoveringNode !== d.node) {
+      d.hoveringNode = d.node;
     }
-    else d.hovering_node = undefined
+    else {
+      d.hoveringNode = undefined;
+    }
 
-    draggedNode.hovering_grid = null
+    this.simulationHandler.draggedNode.hoveringGrid = null;
   }
 }

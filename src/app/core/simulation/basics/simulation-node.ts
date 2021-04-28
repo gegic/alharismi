@@ -18,6 +18,7 @@ export class SimulationNode implements SimulationNodeDatum {
   // TODO
   lockedGraph = undefined;
   lockedGrid?: ArrayCell;
+  hoveringGrid?: ArrayCell;
   dragStartX?: number;
   dragStartY?: number;
   parent?: SimulationNode;

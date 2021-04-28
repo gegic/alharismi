@@ -66,220 +66,204 @@ export class NodeHandler implements DrawableHandler {
   }
 
   draw(): void {
-    const transitionEnterTime = 500;
-    const transitionExitTime = 200;
 
     this.simulationHandler.simulation.nodes(this.nodes.concat(this.invisibleNodes));
 
     this.nodeElements = this.canvas
-      .selectAll('.circle')
+      .selectAll('.node')
       .data(this.nodes, (d: SimulationNode) => d.id)
       .join(
         (enter) => {
-          const cir = enter.append('circle');
-          cir.attr('r', 0)
-            .attr('x', d => d.cx)
-            .attr('y', d => d.cy)
-            .attr('class', 'circle')
-            .on('mouseover', (d, i, nodes) => this.nodeMouseOver(d, i, nodes))
-            .on('mouseout', (d, i, nodes) => this.nodeMouseOut(d, i, nodes))
-            .on('click', (d) => this.nodeClick(d))
-            // .on('contextmenu', d3.contextMenu(circleContextMenu))
-            .call(
-              d3.drag()
-                .on('drag', (d, i, nodes) => this.nodeDragged(d as SimulationNode, i, nodes))
-                .on('end', (d, i, nodes) => this.nodeDragEnd(d as SimulationNode, i, nodes))
-                .on('start', (d, i, nodes) => this.nodeDragStart(d as SimulationNode, i, nodes))
-            )
-            .attr('fill', (d) => this.colorHelper.getNodeColor(d))
-            .style('stroke-width', d => d.highlighted ? 5 : 0)
-            .style('stroke-dasharray', '5,3') // make the stroke dashed
-            .style('stroke', 'pink')
-            .style('stroke-opacity', d => d.isPlaceholder ? 0.4 : 0)
-            .style('stroke-width', d => d.isPlaceholder ? 5 : 0)
-            .style('stroke-dasharray', d => d.isPlaceholder ? '10,3' : '0,0') // make the stroke dashed
-            .style('stroke', 'black')
-            .style('opacity', d => d.isPlaceholder ? 0.8 : 1)
-            .transition()
-            .duration(transitionEnterTime)
-            .attr('r', this.radius);
-          return cir;
+          return this.drawNode(enter);
         },
         update => {
-          update.attr('fill', (d) => this.colorHelper.getNodeColor(d))
-            .style('stroke-width', d => {
-              // if (!d.validInBST) {
-              //   return 5;
-              // }
-              if (d.highlighted) {
-                return 10;
-              }
-              if (d.isPlaceholder) {
-                return 5;
-              } else {
-                return 0;
-              }
-            })
-            // if placeholder
-            .style('stroke-opacity', d => d.isPlaceholder || d.highlighted ? 0.4 : 0)
-            .style('stroke-dasharray', d => {
-              // if (d.isPlaceholder) return "10,3"
-              // if (!d.validInBST) {
-              //   return '5,3';
-              // }
-              if (d.highlighted) {
-                return '5,3';
-              }
-              else {
-                return '0,0';
-              }
-            })
-            .style('stroke', d => {
-              // if (!d.validInBST) {
-              //   return 'red';
-              // }
-              if (d.isPlaceholder) {
-                return 'black';
-              }
-              if (d.highlighted) {
-                return 'green';
-              }
-            })
-            .raise()
-            // animation
-            .attr('r', this.radius)
-            .transition()
-            .duration(transitionExitTime)
-            .attr('r', d => d.highlighted ? this.radius * 1.5 : this.radius)
-            .transition()
-            .duration(transitionEnterTime)
-            .attr('r', this.radius);
-          return update;
+          return this.updateNode(update);
         },
         exit => exit.remove()
       );
-    this.canvas
-      .selectAll('.circlevalues')
-      .data(this.nodes, (d: SimulationNode) => d.id)
-      .join(
-        enter => {
-          const text = enter.append('text');
-          text.attr('class', 'circlevalues')
-            .attr('dy', d => this.radius / 4)
-            .text(d => d.isValueVisible ? d.value : '')
-            .style('text-anchor', 'middle')
-            .attr('dx', d => this.radius / 2.3)
-            .style('fill', 'white')
-            .attr('pointer-events', 'none')
-            // check if number is visible. else hide the number
-            .attr('font-size', d => this.calculateFontSize(d.value.toString()))
-            // enter animation
-            .style('opacity', 0)
-            .transition()
-            .duration(transitionEnterTime)
-            .style('opacity', 1);
-          return text;
-        }, update => {
-          update
-            .text(d => d.isValueVisible ? d.value : '')
-            .attr('font-size', d => this.calculateFontSize(d.value.toString()))
-            .raise();
-          return update;
-        }, exit => exit.remove()
-      );
-
-    this.canvas
-      .selectAll('.circlenames')
-      .data(this.nodes, (d: SimulationNode) => d.id)
-      .join(
-        enter => {
-          const text = enter.append('text');
-          text.attr('class', 'circlenames')
-            .attr('dx', (d) => d.isPlaceholder ? 0 : -40 / 2)
-            .attr('dy', (d) => d.isPlaceholder ? 40 / 8 : 40 / 4)
-            .style('text-anchor', 'middle')
-            .attr('pointer-events', 'none')
-            .attr('font-size', 0)
-            .text(d => !d.isPlaceholder ? `#${d.id}` : 'null')
-            .transition()
-            .duration(transitionEnterTime)
-            .attr('font-size', 16);
-          return text;
-        }, update => {
-          update
-            .text(d => !d.isPlaceholder ? `#${d.id}` : 'null')
-            .raise();
-          return update;
-        }, exit => exit.remove()
-      );
-
-    this.canvas
-      .selectAll('.circlearrow')
-      .data(this.nodes, (d: SimulationNode) => d.id)
-      .join(
-        (enter: Selection<d3.EnterElement, SimulationNode, any, any>) => {
-          const line = enter.append('line');
-
-          line.attr('class', 'circlearrow')
-            .attr('x1', d => d.x)
-            .attr('y1', d => d.y - 150)
-            .attr('x2', d => d.x)
-            .attr('y2', d => d.y - 100)
-            .attr('stroke', 'black')
-            .attr('stroke-width', 5)
-            .attr('opacity', d => d.drawArrow ? 0.5 : 0)
-            .attr('marker-end', 'url(#Triangle)');
-          return line;
-        }, update => {
-          update
-            .attr('opacity', d => d.drawArrow ? 0.5 : 0)
-            .raise();
-          return update;
-        }, exit => exit.remove()
-      );
-
-    this.canvas
-      .selectAll('.rootnames')
-      .data(this.nodes, (d: SimulationNode) => d.id)
-      .join(
-        enter => {
-          const text = enter.append('text');
-          text.attr('class', 'rootnames')
-            .attr('dx', 0)
-            .attr('dy', -40 * 1.1)
-            .style('text-anchor', 'middle')
-            .attr('pointer-events', 'none')
-            .attr('font-size', 32)
-            .text(d => d.lockedGraph !== undefined && d.lockedGraph.root === d ? 'root' : '');
-          return text;
-        }, update => {
-          update
-            .text(d => d.lockedGraph !== undefined && d.lockedGraph !== null && d.lockedGraph.root === d ? 'root' : '')
-            .raise();
-          return update;
-        }, exit => exit.remove()
-      );
   }
 
-  nodeMouseOver(d: SimulationNode, i: number, nodes: SVGCircleElement[] | ArrayLike<SVGCircleElement>): void {
+  private drawNode(enter: Selection<any, any, any, any>): Selection<any, any, any, any> {
+    const node = enter.append('g')
+      .attr('class', 'node')
+      .attr('transform', d => `translate(${d.x}, ${d.y})`)
+      .call(
+        d3.drag()
+          .on('drag', (d, i, nodes) => this.nodeDragged(d as SimulationNode, i, nodes))
+          .on('end', (d, i, nodes) => this.nodeDragEnd(d as SimulationNode, i, nodes))
+          .on('start', (d, i, nodes) => this.nodeDragStart(d as SimulationNode, i, nodes))
+      );
+
+    node
+      .append('circle')
+      .attr('class', 'node-circle')
+      .on('mouseover', (d, i, nodes) => this.nodeMouseOver(d, i, nodes))
+      .on('mouseout', (d, i, nodes) => this.nodeMouseOut(d, i, nodes))
+      .attr('r', 0)
+      .attr('fill', (d: SimulationNode) => this.colorHelper.getNodeColor(d))
+      .style('stroke-width', (d: SimulationNode) => d.highlighted ? 5 : 0)
+      .style('stroke-dasharray', '5,3') // make the stroke dashed
+      .style('stroke', 'pink')
+      .style('stroke-opacity', (d: SimulationNode) => d.isPlaceholder ? 0.4 : 0)
+      .style('stroke-width', (d: SimulationNode) => d.isPlaceholder ? 5 : 0)
+      .style('stroke-dasharray', (d: SimulationNode) => d.isPlaceholder ? '10,3' : '0,0') // make the stroke dashed
+      .style('stroke', 'black')
+      .style('opacity', (d: SimulationNode) => d.isPlaceholder ? 0.8 : 1)
+      .style('cursor', (d: SimulationNode) => d.isInteractable ? 'pointer' : 'not-allowed')
+      .transition()
+      .duration(500)
+      .attr('r', this.radius);
+
+    node
+      .append('text')
+      .attr('class', 'circle-value')
+      .attr('dy', this.radius / 4)
+      .text(d => d.isValueVisible ? d.value : '')
+      .style('text-anchor', 'middle')
+      .attr('dx',  this.radius / 2.3)
+      .style('fill', 'white')
+      .attr('pointer-events', 'none')
+      // check if number is visible. else hide the number
+      .attr('font-size', d => this.calculateFontSize(d.value.toString()))
+      // enter animation
+      .style('opacity', 0)
+      .transition()
+      .duration(500)
+      .style('opacity', 1);
+
+    node
+      .append('text')
+      .attr('class', 'circle-name')
+      .style('fill', 'black')
+      .attr('dx', (d) => d.isPlaceholder ? 0 : -40 / 2)
+      .attr('dy', (d) => d.isPlaceholder ? 40 / 8 : 40 / 4)
+      .style('text-anchor', 'middle')
+      .attr('pointer-events', 'none')
+      .attr('font-size', 0)
+      .raise()
+      .text(d => !d.isPlaceholder ? `#${d.id}` : 'null')
+      .transition()
+      .duration(500)
+      .attr('font-size', 16);
+
+    node.append('line')
+      .attr('class', 'circle-arrow')
+      .attr('x1', d => d.x)
+      .attr('y1', d => d.y - 150)
+      .attr('x2', d => d.x)
+      .attr('y2', d => d.y - 100)
+      .attr('stroke', 'black')
+      .attr('stroke-width', 5)
+      .attr('opacity', d => d.drawArrow ? 0.5 : 0)
+      .attr('marker-end', 'url(#Triangle)');
+
+    node.append('text')
+      .attr('class', 'root-name')
+      .attr('dx', 0)
+      .attr('dy', -40 * 1.1)
+      .style('text-anchor', 'middle')
+      .attr('pointer-events', 'none')
+      .attr('font-size', 32)
+      .text(d => d.lockedGraph !== undefined && d.lockedGraph.root === d ? 'root' : '');
+    return node;
+  }
+
+  private updateNode(update: Selection<any, any, any, any>): Selection<any, any, any, any> {
+    update.attr('fill', (d) => this.colorHelper.getNodeColor(d))
+      .style('stroke-width', d => {
+        // if (!d.validInBST) {
+        //   return 5;
+        // }
+        if (d.highlighted) {
+          return 10;
+        }
+        if (d.isPlaceholder) {
+          return 5;
+        } else {
+          return 0;
+        }
+      })
+      // if placeholder
+      .style('stroke-opacity', d => d.isPlaceholder || d.highlighted ? 0.4 : 0)
+      .style('stroke-dasharray', d => {
+        // if (d.isPlaceholder) return "10,3"
+        // if (!d.validInBST) {
+        //   return '5,3';
+        // }
+        if (d.highlighted) {
+          return '5,3';
+        }
+        else {
+          return '0,0';
+        }
+      })
+      .style('stroke', d => {
+        // if (!d.validInBST) {
+        //   return 'red';
+        // }
+        if (d.isPlaceholder) {
+          return 'black';
+        }
+        if (d.highlighted) {
+          return 'green';
+        }
+      })
+      .raise()
+      // animation
+      .attr('r', this.radius)
+      .transition()
+      .duration(400)
+      .attr('r', d => d.highlighted ? this.radius * 1.5 : this.radius)
+      .transition()
+      .duration(500)
+      .attr('r', this.radius);
+
+    update
+      .select('circle-value')
+      .text(d => d.isValueVisible ? d.value : '')
+      .attr('font-size', d => this.calculateFontSize(d.value.toString()))
+      .raise();
+
+    update
+      .select('circle-name')
+      .text(d => !d.isPlaceholder ? `#${d.id}` : 'null')
+      .raise();
+
+    update
+      .select('circle-arrow')
+      .attr('opacity', d => d.drawArrow ? 0.5 : 0)
+      .raise();
+
+    update
+      .select('root-name')
+      .text(d => d.lockedGraph !== undefined && d.lockedGraph !== null && d.lockedGraph.root === d ? 'root' : '')
+      .raise();
+    return update;
+  }
+
+  nodeMouseOver(d: SimulationNode, i: number, nodes: (SVGCircleElement | Element | d3.EnterElement | Document | Window | null)[] |
+    ArrayLike<SVGCircleElement | Element | d3.EnterElement | Document | Window | null>): void {
     const circle = d3.select(nodes[i]);
     if (!this.nodes.includes(circle.datum() as SimulationNode)) {
       return;
     }
+
     if (!d.isInteractable) {
-      circle.style('cursor', 'not-allowed');
       return;
     }
-    // const circle = d3.select(this)
-    circle.style('cursor', 'pointer');
+
     circle
+      // .select('.node-circle')
       .transition()
       .duration(1000)
       .ease(d3.easeElastic)
       .attr('r', defaultRadius + 10);
+
   }
 
-  nodeMouseOut(d: SimulationNode, i: number, nodes: SVGCircleElement[] | ArrayLike<SVGCircleElement>): void {
+  nodeMouseOut(d: SimulationNode, i: number, nodes: (SVGCircleElement | Element | d3.EnterElement | Document | Window | null)[] |
+    ArrayLike<SVGCircleElement | Element | d3.EnterElement | Document | Window | null>): void {
+
     const circle = d3.select(nodes[i]);
 
     if (!this.nodes.includes(circle.datum() as SimulationNode)) {
@@ -289,6 +273,7 @@ export class NodeHandler implements DrawableHandler {
       return;
     }
     circle
+      // .select('.node-circle')
       .transition()
       .duration(1000)
       .ease(d3.easeElastic)
@@ -304,34 +289,38 @@ export class NodeHandler implements DrawableHandler {
   nodeDragged(d: SimulationNode, i: number, nodes: Element[] | ArrayLike<Element>): void {
     const node = nodes[i] as SVGCircleElement;
     const circle = d3.select(node);
-    circle.style('cursor', 'grabbing');
     if (d.isPlaceholder && d.lockedGraph.root !== d) {
       return;
     }
     this.previouslyHoveredPlaceholders.forEach(c => c.attr('fill', 'white'));
     this.previouslyHoveredPlaceholders = [];
 
-    if (!(d.isPlaceholder)) {
-      this.nodes.filter(c => c.isPlaceholder).some((n: SimulationNode) => {
-        if (d === n) {
-          return false;
-        }
-        const distance = Math.sqrt((d.x - n.x) * (d.x - n.x) + (d.y - n.y) * (d.y - n.y));
-        if (d !== n && distance < d.radius + n.radius + 10) {
-          if (d.lockedGraph !== n.lockedGraph &&
-            n.lockedGraph.allowAddingChildToPlaceholder) {
-            // const circleElement = d3.selectAll('circle').filter((c) => c === n);
-            this.previouslyHoveredPlaceholders.push(circle);
-            circle.attr('fill', '#228B22');
+    if (this.simulationHandler.draggedNode) {
+      d = this.simulationHandler.draggedNode;
+      if (!(d.isPlaceholder)) {
+        this.nodes.filter(c => c.isPlaceholder).some((n: SimulationNode) => {
+          if (d === n) {
+            return false;
+          }
+          const distance = Math.sqrt((d.x - n.x) * (d.x - n.x) + (d.y - n.y) * (d.y - n.y));
+          if (d !== n && distance < d.radius + n.radius + 10) {
+            if (d.lockedGraph !== n.lockedGraph &&
+              n.lockedGraph.allowAddingChildToPlaceholder) {
+              // const circleElement = d3.selectAll('circle').filter((c) => c === n);
+              this.previouslyHoveredPlaceholders.push(circle);
+              circle.attr('fill', '#228B22');
+              return true;
+            }
             return true;
           }
-          return true;
-        }
-      });
+        });
+      }
+      if (this.simulationHandler.draggedNode.hoveringGrid) {
+        return;
+      }
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
     }
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
-
     this.simulationHandler.draggedNode = d;
   }
 
@@ -341,20 +330,22 @@ export class NodeHandler implements DrawableHandler {
     }
     d.dragStartX = d.x;
     d.dragStartY = d.y;
+    d3.select('*').style('cursor', 'grabbing');
+    d3.select(nodes[i]).raise();
     d3.selectAll('line').attr('pointer-events', 'none'); // remove hovering from all lines
     d.fx = d3.event.x;
     d.fy = d3.event.y;
     d3.select(nodes[i]).attr('pointer-events', 'none');
-    d3.selectAll('.circle')
+    d3.selectAll('.node')
       .filter(c => c !== d)
       .attr('pointer-events', 'none'); // remove hovering from all nodes except d
-
   }
 
   nodeDragEnd(d: SimulationNode, i: number, nodes: Element[] | ArrayLike<Element>): void {
+
     if (!d) {
       d3.selectAll('line').attr('pointer-events', 'auto');
-      d3.selectAll('.circle').attr('pointer-events', 'auto');
+      d3.selectAll('.node').attr('pointer-events', 'auto');
       this.simulationHandler.draggedNode = null;
       return;
     }
@@ -363,17 +354,18 @@ export class NodeHandler implements DrawableHandler {
       return;
     }
 
-    d3.select(nodes[i]).style('cursor', 'pointer');
+    d3.select('*').style('cursor', null);
 
     const distanceDragged = Math.sqrt(Math.pow(d3.event.x - d.dragStartX, 2) + Math.pow(d3.event.y - d.dragStartY, 2));
+
     d3.selectAll('circle')
       .filter((nd: SimulationNode) => nd.isPlaceholder)
       .attr('fill', 'white');
 
     d3.selectAll('line').attr('pointer-events', 'auto');
-    d3.selectAll('.circle').attr('pointer-events', 'auto');
+    d3.selectAll('.node').attr('pointer-events', 'auto');
 
-    if (distanceDragged < 20) {
+    if (distanceDragged < 30) {
       // short drag, do nothing
       if (this.simulationHandler.draggedNode && !this.simulationHandler.draggedNode.lockedGrid) {
         d.fx = undefined;
@@ -412,7 +404,7 @@ export class NodeHandler implements DrawableHandler {
       //   }
       // }
       const arrayCell = d3
-        .selectAll('.arraycell')
+        .selectAll('.array-cell-container')
         .data()
         .filter((ac: ArrayCell) => ac.isMouseOver)[0] as ArrayCell; // select array cell where mouse is hovering over
 
@@ -423,24 +415,29 @@ export class NodeHandler implements DrawableHandler {
             d.lockedGrid.removeNode();
           }
           arrayCell.addNode(d);
+          this.simulationHandler.repaint();
         } else if (arrayCell.node === d) {
           // do nothing
         } else if (arrayCell.node !== d) {
           if (d.lockedGrid) {
             d.lockedGrid.removeNode();
+            this.simulationHandler.repaint();
           }
           arrayCell.removeNode();
+          this.simulationHandler.repaint();
           arrayCell.addNode(d);
+          this.simulationHandler.repaint();
         }
       } else {
         if (d.lockedGrid) {
           d.lockedGrid.removeNode();
+          this.simulationHandler.repaint();
         }
         d.fx = undefined;
         d.fy = undefined;
       }
+
       if (!this.simulationHandler.draggedNode.isPlaceholder) {
-        console.log('dragended1');
         this.nodes
           .filter((nd: SimulationNode) => nd.isPlaceholder)
           .some((nd: SimulationNode) => {
@@ -482,10 +479,9 @@ export class NodeHandler implements DrawableHandler {
     }
     if (d) {
       d.setTransform(d3.event.x, d3.event.y);
-      this.simulationHandler.repaint();
     }
     d3.selectAll('line').attr('pointer-events', 'auto');
-    d3.selectAll('.circle').attr('pointer-events', 'auto');
+    d3.selectAll('.node').attr('pointer-events', 'auto');
     if (this.simulationHandler.draggedNode && !this.simulationHandler.draggedNode.lockedGrid) {
       d.fx = undefined;
       d.fy = undefined;

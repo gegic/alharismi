@@ -62,14 +62,14 @@ export class SimulationHandler {
       if (elapsed > fpsInterval) {
         then = now - (elapsed / fpsInterval);
         this.nodes
-          ?.attr('cx', (d: SimulationNode) => {
-            return d.x;
-          })
-          ?.attr('cy', (d: SimulationNode) => d.y);
+          ?.attr('transform', d => `translate(${d.x}, ${d.y})`);
 
-        this.texts
-          ?.attr('x', (d: SimulationText) => d.x)
-          ?.attr('y', (d: SimulationText) => d.y);
+        this.arrays
+          ?.attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+        // this.texts
+        //   ?.attr('x', (d: SimulationText) => d.x)
+        //   ?.attr('y', (d: SimulationText) => d.y);
 
         // this.links
         //   ?.attr('x1', (d: SimulationLink) => d.source.x)
@@ -105,12 +105,13 @@ export class SimulationHandler {
 
     // if (window.camera) setTimeout(() => window.camera.reFocus(), 50)
 
-    this.nodes = svg.selectAll('.circle, .button');
-    this.texts = svg.selectAll('.circlenames, .circlevalues, .rootnames, .textnode, .buttontext, .textarea');
-    this.links = svg.selectAll('.default_link');
-    this.bstLinks = svg.selectAll('.BST_line');
-    this.arrows = svg.selectAll('.circlearrow');
+    this.nodes = svg.selectAll('.node');
     this.arrays = svg.selectAll('.array');
+
+    // this.texts = svg.selectAll('.circlenames, .circlevalues, .rootnames, .textnode, .buttontext, .textarea');
+    // this.links = svg.selectAll('.default_link');
+    // this.bstLinks = svg.selectAll('.BST_line');
+    // this.arrows = svg.selectAll('.circlearrow');
   }
 
   setHandlers(...drawableHandlers: DrawableHandler[]): void {

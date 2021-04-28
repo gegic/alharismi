@@ -18,6 +18,7 @@ import {NodeHandler} from '../simulation/handlers/node-handler';
 import {PositionHelper} from '../simulation/helpers/position-helper';
 import {ColorHelper} from '../simulation/helpers/color-helper';
 import {SimulationHandler} from '../simulation/handlers/simulation-handler';
+import {ArrayHandler} from '../simulation/handlers/array-handler';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,7 @@ export class ScenarioService {
 
   dataHandler?: DataHandler;
   nodeHandler?: NodeHandler;
+  arrayHandler?: ArrayHandler;
   simulationHandler?: SimulationHandler;
   canvas: BehaviorSubject<Selection<any, any, d3.BaseType, any> | undefined> =
     new BehaviorSubject<Selection<any, any, d3.BaseType, any> | undefined>(undefined);
@@ -45,7 +47,12 @@ export class ScenarioService {
       this.simulationHandler
     );
 
-    this.simulationHandler.setHandlers(this.nodeHandler);
+    this.arrayHandler = new ArrayHandler(
+      this.simulationHandler,
+      this.canvas.getValue()
+    );
+
+    this.simulationHandler.setHandlers(this.nodeHandler, this.arrayHandler);
     this.simulationHandler.setupSimulation();
   }
 
@@ -57,12 +64,15 @@ export class ScenarioService {
     const nodes = this.nodeHandler.generateNodes(5, this.isLevelComplete);
     this.nodeHandler.add(nodes);
     this.nodeHandler.draw();
+    const arr = this.arrayHandler.createArray(10);
+    arr.setLength(10);
+    this.arrayHandler.add(arr);
     this.simulationHandler.repaint();
   }
 
   isLevelComplete(ni: SimulationNode): void {
     if (ni) {
-      ni.clicked();
+      // ni.clicked();.
     }
     if (ni && !ni.lockedGrid) {
       ni.fx = undefined;

@@ -4,10 +4,11 @@ import {ArrayCell} from './array-cell';
 
 export class SimulationArray {
 
+  cellWidth = 100;
+  cellHeight = 100;
+
   id: number;
   size: number;
-  cellWidth: number;
-  cellHeight: number;
   data: ArrayCell[];
   x: number;
   y: number;
@@ -15,10 +16,8 @@ export class SimulationArray {
   color: string;
   isStatic: boolean;
   descriptor: string;
-  name: string;
-  container?: Selection<any, any, any, any>;
 
-  constructor(id: number, size: number, descriptor: string, x: number, y: number, name = 'Array'){
+  constructor(id: number, size: number, x: number, y: number, descriptor?: string){
     this.id = id;
     this.size = size;
     this.cellWidth = 100;
@@ -29,15 +28,7 @@ export class SimulationArray {
     this.z = -2;
     this.color = 'gainsboro';
     this.isStatic = false;
-    // this.makeGrid()
-    this.descriptor = descriptor;
-    this.name = name;
-  }
-
-  delete(): void {
-    if (this.container) {
-      this.container.transition().duration(500).style('opacity', 0).remove();
-    }
+    this.descriptor = descriptor ?? `array${id}`;
   }
 
   add(nodes: SimulationNode[]): void {
@@ -59,10 +50,41 @@ export class SimulationArray {
   setTransform(x: number, y: number): void {
     this.x = x;
     this.y = y;
-    this.container.attr('transform', 'translate(' + (this.x) + ',' + this.y + ')'); // set start position
-    this.data.filter((d: ArrayCell) => !!d.node).forEach((d: ArrayCell) => {
+    this.data.filter(d => d.node).forEach((d) => {
       d.node.fx = this.x + d.x + d.width / 2;
       d.node.fy = d.height / 2 + this.y;
     });
+  }
+
+  makeGrid(count: number): void {
+    let xpos = (this.cellWidth + this.cellWidth / 20) * this.data.length;
+
+    const newSize = this.data.length + count;
+
+    for (let column = this.data.length; column < newSize; column++) {
+      this.data.push(new ArrayCell(this, xpos, 0, this.cellWidth, this.cellHeight, column));
+      // increment the x position. I.e. move it over by 50 (width variable)
+      xpos += this.cellWidth + this.cellWidth / 20; // and a little bit of margin
+    }
+  }
+
+  setLength(length: number): void {
+    this.size = length;
+
+    if (length < this.data.length) {
+      for (let i = length ; i < this.data.length; i++)
+      {
+        if (!this.data[i].node) {
+          continue;
+        }
+        const c = this.data[i].node;
+        c.fx = null;
+        c.fy = null;
+      }
+      this.data = this.data.splice(0, length);
+    }
+    else {
+      this.makeGrid(length - this.data.length);
+    }
   }
 }
