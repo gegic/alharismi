@@ -19,6 +19,7 @@ import {PositionHelper} from '../simulation/helpers/position-helper';
 import {ColorHelper} from '../simulation/helpers/color-helper';
 import {SimulationHandler} from '../simulation/handlers/simulation-handler';
 import {ArrayHandler} from '../simulation/handlers/array-handler';
+import {Camera} from '../simulation/camera';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +29,7 @@ export class ScenarioService {
   dataHandler?: DataHandler;
   nodeHandler?: NodeHandler;
   arrayHandler?: ArrayHandler;
+  camera?: Camera;
   simulationHandler?: SimulationHandler;
   canvas: BehaviorSubject<Selection<any, any, d3.BaseType, any> | undefined> =
     new BehaviorSubject<Selection<any, any, d3.BaseType, any> | undefined>(undefined);
@@ -38,10 +40,11 @@ export class ScenarioService {
   constructor(private httpClient: HttpClient) {
   }
 
-  startSimulation(): void {
+  startSimulation(svg: Selection<any, any, any, any>): void {
+    const positionHelper = new PositionHelper();
     this.simulationHandler = new SimulationHandler();
     this.nodeHandler = new NodeHandler(
-      new PositionHelper(),
+      positionHelper,
       new ColorHelper(),
       this.canvas.getValue(),
       this.simulationHandler
@@ -49,8 +52,11 @@ export class ScenarioService {
 
     this.arrayHandler = new ArrayHandler(
       this.simulationHandler,
-      this.canvas.getValue()
+      this.canvas.getValue(),
     );
+
+    this.camera = new Camera(this.canvas.getValue());
+    this.camera.setZoom(svg);
 
     this.simulationHandler.setHandlers(this.nodeHandler, this.arrayHandler);
     this.simulationHandler.setupSimulation();
@@ -61,11 +67,11 @@ export class ScenarioService {
   }
 
   get_level(): void {
-    const nodes = this.nodeHandler.generateNodes(5, this.isLevelComplete);
+    const nodes = this.nodeHandler.generateNodes(10, this.isLevelComplete);
     this.nodeHandler.add(nodes);
     this.nodeHandler.draw();
     const arr = this.arrayHandler.createArray(10);
-    arr.setLength(10);
+    arr.setLength(this.simulationHandler, 10);
     this.arrayHandler.add(arr);
     this.simulationHandler.repaint();
   }

@@ -60,6 +60,8 @@ export class SimulationHandler {
 
       const fpsInterval = 1000 / interval;
       if (elapsed > fpsInterval) {
+        this.drawableHandlers.forEach(handler => handler.draw());
+
         then = now - (elapsed / fpsInterval);
         this.nodes
           ?.attr('transform', d => `translate(${d.x}, ${d.y})`);
@@ -92,21 +94,22 @@ export class SimulationHandler {
         // this.arrays
         //   ?.attr('x', (d: SimulationArray) => d.x)
         //   ?.attr('y', (d: SimulationArray) => d.y);
+
+        const svg = d3.select('svg');
+        svg.lower();
+
+        // if (window.camera) setTimeout(() => window.camera.reFocus(), 50)
+
+        this.nodes = svg.selectAll('.node');
+        this.arrays = svg.selectAll('.array');
+
       }
     };
   }
 
   repaint(): void {
 
-    this.drawableHandlers.forEach(handler => handler.draw());
 
-    const svg = d3.select('svg');
-    svg.lower();
-
-    // if (window.camera) setTimeout(() => window.camera.reFocus(), 50)
-
-    this.nodes = svg.selectAll('.node');
-    this.arrays = svg.selectAll('.array');
 
     // this.texts = svg.selectAll('.circlenames, .circlevalues, .rootnames, .textnode, .buttontext, .textarea');
     // this.links = svg.selectAll('.default_link');

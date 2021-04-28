@@ -1,5 +1,12 @@
 import {SimulationNode} from '../../basics/simulation-node';
 import {SimulationArray} from './simulation-array';
+import {ArrayCellDrawing} from '../../behaviors/drawing/array-cell-drawing';
+import {ArrayDrawing} from '../../behaviors/drawing/array-drawing';
+import {Selection} from 'd3-selection';
+import * as d3 from 'd3';
+import {ArrayCellMouse} from '../../behaviors/mouse/array-cell-mouse';
+import {DrawingBehavior} from '../../behaviors/drawing/drawing-behavior';
+import {d3Element, MouseBehavior} from '../../behaviors/mouse/mouse-behavior';
 
 export class ArrayCell {
   x: number;
@@ -12,7 +19,19 @@ export class ArrayCell {
   hoveringNode?: SimulationNode;
   parent: SimulationArray;
 
-  constructor(parent: SimulationArray, x: number, y: number, width: number, height: number, index: number) {
+  drawingBehavior: DrawingBehavior<ArrayCell>;
+  mouseBehavior: MouseBehavior<ArrayCell>;
+
+  constructor(drawingBehavior: ArrayCellDrawing,
+              mouseBehavior: ArrayCellMouse,
+              parent: SimulationArray,
+              x: number,
+              y: number,
+              width: number,
+              height: number,
+              index: number) {
+    this.drawingBehavior = drawingBehavior;
+    this.mouseBehavior = mouseBehavior;
     this.parent = parent;
     this.x = x;
     this.y = y;
@@ -31,6 +50,7 @@ export class ArrayCell {
     node.hoveringGrid = this;
     node.fx = this.parent.x + this.x + this.width / 2;
     node.fy = this.height / 2 + this.parent.y;
+    console.log(node);
   }
 
   removeNode(): SimulationNode | null {
@@ -50,5 +70,26 @@ export class ArrayCell {
   toString(): string {
     return `${parent.name}[${this.index}]`;
   }
+
+  enter(enterElement: Selection<d3.EnterElement, ArrayCell, any, any>): Selection<d3.BaseType, ArrayCell, any, any> {
+    return this.drawingBehavior.enter(enterElement);
+  }
+
+  update(updateElement: Selection<d3.BaseType, ArrayCell, any, any>): Selection<d3.BaseType, ArrayCell, any, any> {
+    return this.drawingBehavior.update(updateElement);
+  }
+
+  exit(exitElement: Selection<d3.BaseType, ArrayCell, any, any>): Selection<d3.BaseType, ArrayCell, any, any> {
+    return this.drawingBehavior.exit(exitElement);
+  }
+
+  mouseOver(i: number, cells: d3Element[] | ArrayLike<d3Element>): void {
+    this.mouseBehavior.mouseOver(this, i, cells);
+  }
+
+  mouseOut(i: number, cells: d3Element[] | ArrayLike<d3Element>): void {
+    this.mouseBehavior.mouseOut(this, i, cells);
+  }
+
 
 }

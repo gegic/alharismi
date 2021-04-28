@@ -6,6 +6,7 @@ import {Selection} from 'd3-selection';
 import {SimulationNode} from '../../core/simulation/basics/simulation-node';
 import {SimulationLink} from '../../core/simulation/basics/simulation-link';
 import {ScenarioService} from '../../core/services/scenario.service';
+import {ArrowheadHelper} from '../../core/simulation/helpers/arrowhead-helper';
 @Component({
   selector: 'app-visualization-view',
   templateUrl: './visualization-view.component.html',
@@ -34,7 +35,7 @@ export class VisualizationViewComponent implements AfterViewInit {
       .append('g')
       .attr('class', 'canvas');
     this.scenarioService.canvas.next(g);
-    this.scenarioService.startSimulation();
+    this.scenarioService.startSimulation(this.svg);
     this.scenarioService.get_level();
   }
 
@@ -51,6 +52,9 @@ export class VisualizationViewComponent implements AfterViewInit {
       .attr('height', '100%')
       .attr('width', '100%')
       .style('background', '#282828');
+
+    ArrowheadHelper.addArrowhead(this.svg);
+
     this.svg.append('filter')
       .attr('id', 'blur')
       .append('feGaussianBlur')

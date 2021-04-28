@@ -1,6 +1,17 @@
 import {Selection} from 'd3-selection';
 import {SimulationNode} from '../../basics/simulation-node';
 import {ArrayCell} from './array-cell';
+import {ArrayDrawing} from '../../behaviors/drawing/array-drawing';
+import * as d3 from 'd3';
+import {ArrayContextMenu} from '../../behaviors/context-menu/array-context-menu';
+import {MenuItem} from 'd3-context-menu';
+import {SimulationHandler} from '../../handlers/simulation-handler';
+import {ArrayCellDrawing} from '../../behaviors/drawing/array-cell-drawing';
+import {ArrayCellMouse} from '../../behaviors/mouse/array-cell-mouse';
+import {DrawingBehavior} from '../../behaviors/drawing/drawing-behavior';
+import {DragBehavior} from '../../behaviors/drag/drag-behavior';
+import {ContextMenuBehavior} from '../../behaviors/context-menu/context-menu-behavior';
+import {MouseBehavior} from '../../behaviors/mouse/mouse-behavior';
 
 export class SimulationArray {
 
@@ -13,11 +24,21 @@ export class SimulationArray {
   x: number;
   y: number;
   z: number;
-  color: string;
   isStatic: boolean;
   descriptor: string;
 
-  constructor(id: number, size: number, x: number, y: number, descriptor?: string){
+  drawingBehavior: DrawingBehavior<SimulationArray>;
+  dragBehavior: DragBehavior<SimulationArray>;
+  contextMenu: ContextMenuBehavior;
+
+  constructor(drawingBehavior: DrawingBehavior<SimulationArray>,
+              dragBehavior: DragBehavior<SimulationArray>,
+              contextMenu: ContextMenuBehavior,
+              id: number,
+              size: number,
+              x: number,
+              y: number,
+              descriptor?: string) {
     this.id = id;
     this.size = size;
     this.cellWidth = 100;
@@ -56,19 +77,28 @@ export class SimulationArray {
     });
   }
 
-  makeGrid(count: number): void {
+  makeGrid(simulationHandler: SimulationHandler, count: number): void {
     let xpos = (this.cellWidth + this.cellWidth / 20) * this.data.length;
 
     const newSize = this.data.length + count;
 
     for (let column = this.data.length; column < newSize; column++) {
-      this.data.push(new ArrayCell(this, xpos, 0, this.cellWidth, this.cellHeight, column));
+      const cell = new ArrayCell(
+        new ArrayCellDrawing(),
+        new ArrayCellMouse(simulationHandler),
+        this, xpos,
+        0,
+        this.cellWidth,
+        this.cellHeight,
+        column
+      );
+      this.data.push();
       // increment the x position. I.e. move it over by 50 (width variable)
       xpos += this.cellWidth + this.cellWidth / 20; // and a little bit of margin
     }
   }
 
-  setLength(length: number): void {
+  setLength(simulationHandler: SimulationHandler, length: number): void {
     this.size = length;
 
     if (length < this.data.length) {
@@ -84,7 +114,45 @@ export class SimulationArray {
       this.data = this.data.splice(0, length);
     }
     else {
-      this.makeGrid(length - this.data.length);
+      this.makeGrid(simulationHandler, length - this.data.length);
     }
+  }
+
+  async linearFindElement(value: number): Promise<void> {}
+
+  getContextMenu(): MenuItem[] {
+    return this.contextMenu.getContextMenu();
+  }
+
+  enter(enterElement: Selection<d3.EnterElement, SimulationArray, any, any>): Selection<d3.BaseType, SimulationArray, any, any> {
+    return this.drawingBehavior.enter(enterElement);
+  }
+
+  update(updateElement: Selection<d3.BaseType, SimulationArray, any, any>): Selection<d3.BaseType, SimulationArray, any, any> {
+    return this.drawingBehavior.update(updateElement);
+  }
+
+  exit(exitElement: Selection<d3.BaseType, SimulationArray, any, any>): Selection<d3.BaseType, SimulationArray, any, any> {
+    return this.drawingBehavior.exit(exitElement);
+  }
+
+  dragStart(i: number, nodes: Element[] | ArrayLike<Element>): void {
+    this.dragBehavior.dragStart(this, i, nodes);
+  }
+
+  dragging(i: number, nodes: Element[] | ArrayLike<Element>): void {
+    this.dragBehavior.dragging(this, i, nodes);
+  }
+
+  dragEnd(i: number, nodes: Element[] | ArrayLike<Element>): void {
+    this.dragBehavior.dragEnd(this, i, nodes);
+  }
+
+  set color(color: string) {
+    this.drawingBehavior.color = color;
+  }
+
+  get color(): string {
+    return this.drawingBehavior.color;
   }
 }
