@@ -1,87 +1,102 @@
-import {SimulationHandler} from './simulation-handler';
+import {SimulationLoop} from './simulation-loop';
 import {SimulationArray} from '../structures/array/simulation-array';
 import {Selection} from 'd3-selection';
+import {PositionHelper} from '../helpers/position-helper';
 import {DrawableHandler} from './drawable-handler';
 import * as d3 from 'd3';
+import {SimulationNode} from '../basics/simulation-node';
 import {ArrayCell} from '../structures/array/array-cell';
-import contextMenu, {MenuItem} from 'd3-context-menu';
-import {ArrayDrawing} from '../behaviors/drawing/array-drawing';
-import {DrawingBehavior} from '../behaviors/drawing/drawing-behavior';
-import {ArrayDrag} from '../behaviors/drag/array-drag';
-import {ArrayContextMenu} from '../behaviors/context-menu/array-context-menu';
+import contextMenu from 'd3-context-menu';
+import {DrawingHelper} from '../helpers/drawing/drawing-helper';
+import {DragHelper} from '../helpers/drag/drag-helper';
+import {ArrayCellDrawing} from '../helpers/drawing/array-cell-drawing';
+import {ArrayCellMouse} from '../helpers/mouse/array-cell-mouse';
+import {MouseHelper} from '../helpers/mouse/mouse-helper';
+import {Simulation} from '../simulation';
 
-export class ArrayHandler implements DrawableHandler {
+export class ArrayHandler implements DrawableHandler<SimulationArray> {
 
-  simulationHandler: SimulationHandler;
+  drawingHelper: DrawingHelper<SimulationArray>;
+  dragHelper: DragHelper<SimulationArray>;
+  mouseHelper: MouseHelper<SimulationArray>;
+  arrayCellDrawingHelper: DrawingHelper<ArrayCell>;
+  arrayCellMouseHelper: MouseHelper<ArrayCell>;
+  simulation: Simulation;
 
   maxId = 0;
 
-  arrays: SimulationArray[] = [];
-
+  data: SimulationArray[] = [];
   canvas: Selection<any, any, any, any>;
 
-  constructor(simulationHandler: SimulationHandler,
+  constructor(simulation: Simulation,
+              drawingHelper: DrawingHelper<SimulationArray>,
+              arrayCellDrawingHelper: DrawingHelper<ArrayCell>,
+              dragHelper: DragHelper<SimulationArray>,
+              mouseHelper: MouseHelper<SimulationArray>,
+              arrayCellMouseHelper: MouseHelper<ArrayCell>,
               canvas: Selection<any, any, any, any>) {
-    this.simulationHandler = simulationHandler;
+    this.drawingHelper = drawingHelper;
+    this.arrayCellDrawingHelper = arrayCellDrawingHelper;
+    this.dragHelper = dragHelper;
+    this.mouseHelper = mouseHelper;
+    this.arrayCellMouseHelper = arrayCellMouseHelper;
+    this.simulation = simulation;
     this.canvas = canvas;
   }
 
-  createArray(size: number, descriptor?: string): SimulationArray {
-    return new SimulationArray(
-      new ArrayDrawing(),
-      new ArrayDrag(),
-      new ArrayContextMenu(),
-      this.simulationHandler,
-      this.maxId++,
-      size,
-      0,
-      0,
-      descriptor
-    );
+  create(size: number, xPos: number, yPos: number, descriptor?: string): SimulationArray {
+    return new SimulationArray(this.maxId++, size, xPos, yPos, descriptor);
   }
 
   add(array: SimulationArray): void {
-    this.arrays.push(array);
+    this.data.push(array);
   }
 
   draw(): void {
 
     const arrayElements = this.canvas
       .selectAll('.array')
-      .data(this.arrays, (arr: SimulationArray) => arr.id)
-      .join(enter => enter.datum()?.enter(enter),
-        update => update.datum()?.update(update),
-        exit => exit.datum()?.exit(exit));
+      .data(this.data, (arr: SimulationArray) => arr.id)
+      .join(enterElement => this.enter(enterElement),
+            updateElement => this.update(updateElement),
+        exitElement => this.exit(exitElement));
 
     arrayElements.lower();
 
   }
 
-  async linearFindElement(arr: SimulationArray, value: number): Promise<void> {
-    for (let i = 0; i < arr.size; ++i) {
-      const cell = arr.data[i];
-      if (!cell.node) {
-        continue;
-      }
+  enter(enterElement: d3.Selection<d3.EnterElement, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
+    const arrElement = this.drawingHelper.enter(enterElement);
+    this.mouseHelper.addMouseInteraction(arrElement.select('.array-bg'));
+    this.dragHelper.addDragInteraction(arrElement);
+    arrElement
+      .selectAll('.array-cell')
+      .data((d: SimulationArray) => d.data, (cell: ArrayCell) => cell.id)
+      .join(enterCell => {
+        const cellElement = this.arrayCellDrawingHelper.enter(enterCell);
+        this.arrayCellMouseHelper.addMouseInteraction(cellElement);
+        return cellElement;
+      });
+    return arrElement;
+  }
 
-      cell.node.drawArrow = true;
-      cell.node.isValueVisible = true;
-      this.simulationHandler.repaint();
 
-      await new Promise(r => setTimeout(r, 1000));
+  update(updateElement: d3.Selection<d3.BaseType, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
+    this.drawingHelper.update(updateElement);
+    updateElement
+      .selectAll('.array-cell')
+      .data((d: SimulationArray) => d.data, (cell: ArrayCell) => cell.id)
+      .join(enterCell => {
+          const cellElement = this.arrayCellDrawingHelper.enter(enterCell);
+          this.arrayCellMouseHelper.addMouseInteraction(cellElement);
+          return cellElement;
+        },
+          updateCell => this.arrayCellDrawingHelper.update(updateCell),
+        exitCell => this.arrayCellDrawingHelper.exit(exitCell));
+    return updateElement;
+  }
 
-      cell.node.drawArrow = false;
-
-      if (cell.node.value === value) {
-        cell.node.highlighted = true;
-        this.simulationHandler.repaint();
-        await new Promise(r => setTimeout(r, 1000));
-        cell.node.highlighted = false;
-        return;
-      }
-    }
-
-    this.simulationHandler.repaint();
-    alert(`Element with ${value} not found.`);
+  exit(exitElement: d3.Selection<d3.BaseType, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
+    return this.drawingHelper.exit(exitElement);
   }
 }

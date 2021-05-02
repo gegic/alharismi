@@ -1,10 +1,21 @@
-import {ContextMenuBehavior} from './context-menu-behavior';
-import {SimulationArray} from '../../structures/array/simulation-array';
-import {MenuItem} from 'd3-context-menu';
+import {MouseHelper} from './mouse-helper';
 import {ArrayCell} from '../../structures/array/array-cell';
+import {SimulationLoop} from '../../handlers/simulation-loop';
+import contextMenu, {MenuItem} from 'd3-context-menu';
+import * as d3 from 'd3';
+import {SimulationArray} from '../../structures/array/simulation-array';
+import {SimulationNode} from '../../basics/simulation-node';
+import {Simulation} from '../../simulation';
 
-export class ArrayContextMenu implements ContextMenuBehavior {
-  getContextMenu(): MenuItem[] {
+export class ArrayMouse implements MouseHelper<SimulationArray> {
+
+  simulation: Simulation;
+
+  constructor(simulation: Simulation) {
+    this.simulation = simulation;
+  }
+
+  contextMenu(): MenuItem[] {
     return [
       {
         title: 'Set size',
@@ -16,7 +27,7 @@ export class ArrayContextMenu implements ContextMenuBehavior {
           if (isNaN(parsed)) {
             parsed = 10;
           }
-          elm.setLength(parsed);
+          elm.setSize(parsed);
         }
       },
       {
@@ -82,8 +93,24 @@ export class ArrayContextMenu implements ContextMenuBehavior {
           }
           await arr.linearFindElement(parsed);
         }
+      },
+      {
+        title: 'Insert',
+        action: async (arr: SimulationArray) => {
+          const newValue = parseFloat(prompt('Which value to insert'));
+          const index = parseFloat(prompt('Dje bate?'));
+          if (isNaN(newValue) || isNaN(index)) {
+            alert('Value invalid');
+            return;
+          }
+          // await arr.insertAt(, index);
+        }
       }
     ];
+  }
 
+  addMouseInteraction(element: d3.Selection<d3.BaseType, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
+    element.on('contextmenu', contextMenu(this.contextMenu()));
+    return element;
   }
 }

@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import {SimulationNode} from '../basics/simulation-node';
 
-export class ColorHelper {
+export class ColorProvider {
   colorScheme = d3.scaleLinear<string, d3.RGBColor>().domain([0, 0]).range(['#4484CE', '#94618E']);
 
   setColorScheme(values: number[]): void {
@@ -20,7 +20,7 @@ export class ColorHelper {
 
   getNodeColor(node: SimulationNode): string {
     if (node.isPlaceholder) {
-      return 'white';
+      return '#E2E8CE';
     }
     else if (!node.isValueVisible) {
       return 'grey';

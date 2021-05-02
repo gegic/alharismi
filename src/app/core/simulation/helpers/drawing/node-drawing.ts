@@ -1,35 +1,40 @@
-import {DrawingBehavior} from './drawing-behavior';
+import {DrawingHelper} from './drawing-helper';
 import {SimulationNode} from '../../basics/simulation-node';
 import * as d3 from 'd3';
-import contextMenu from 'd3-context-menu';
-import {defaultRadius} from '../../../consts';
+import contextMenu, {MenuItem} from 'd3-context-menu';
+import {ColorProvider} from '../../providers/color-provider';
 
-export class NodeDrawing implements DrawingBehavior<SimulationNode> {
+export class NodeDrawing implements DrawingHelper<SimulationNode> {
 
-  readonly radius = defaultRadius;
-  color: string;
+  radius = 40;
+  colorProvider: ColorProvider;
+
+  constructor(colorProvider: ColorProvider) {
+    this.colorProvider = colorProvider;
+  }
 
   enter(enterElement: d3.Selection<d3.EnterElement, SimulationNode, any, any>): d3.Selection<d3.BaseType, SimulationNode, any, any> {
     const node = enterElement.append('g')
       .attr('class', 'node')
-      .attr('transform', d => `translate(${d.x}, ${d.y})`)
-      .on('mouseover', (d, i, nodes) => d.mouseOver(i, nodes))
-      .on('mouseout', (d, i, nodes) => d.mouseOut(i, nodes))
-      .on('contextmenu', d => contextMenu(d.getContextMenu()))
-      .call(
-        d3.drag()
-          .on('drag', (d: SimulationNode, i, nodes) => d.dragging(i, nodes))
-          .on('end', (d: SimulationNode, i, nodes) => d.dragEnd(i, nodes))
-          .on('start', (d: SimulationNode, i, nodes) => d.dragStart(i, nodes))
-      );
+      .attr('transform', (d: SimulationNode) => `translate(${d.x}, ${d.y})`)
+      .attr('pointer-events', d => d.pointerEvents ? 'auto' : 'none');
+      // .call(
+      //   d3.drag()
+      //     .on('drag', (d, i, nodes) => this.nodeDragging(d as SimulationNode, i, nodes))
+      //     .on('end', (d, i, nodes) => this.nodeDragEnd(d as SimulationNode, i, nodes))
+      //     .on('start', (d, i, nodes) => this.nodeDragStart(d as SimulationNode, i, nodes))
+      // );
 
     node
       .append('circle')
       .attr('class', 'node-circle')
+      // .on('mouseover', (d, i, nodes) => this.nodeMouseOver(d, i, nodes))
+      // .on('mouseout', (d, i, nodes) => this.nodeMouseOut(d, i, nodes))
+      // .on('contextmenu', contextMenu(this.getContextMenu()))
       .attr('r', 0)
-      .attr('fill', (d: SimulationNode) => d.color)
+      .attr('fill', (d: SimulationNode) => this.colorProvider.getNodeColor(d))
       .style('stroke-width', (d: SimulationNode) => d.highlighted ? 5 : 0)
-      .style('stroke-dasharray', '5') // make the stroke dashed
+      .style('stroke-dasharray', '5,3') // make the stroke dashed
       .style('stroke', 'pink')
       .style('stroke-opacity', (d: SimulationNode) => d.isPlaceholder ? 0.4 : 0)
       .style('stroke-width', (d: SimulationNode) => d.isPlaceholder ? 5 : 0)
@@ -48,7 +53,7 @@ export class NodeDrawing implements DrawingBehavior<SimulationNode> {
       .text(d => d.isValueVisible ? d.value : '')
       .style('text-anchor', 'middle')
       .attr('dx',  this.radius / 2.3)
-      .style('fill', 'white')
+      .style('fill', '#E2E8CE')
       .attr('pointer-events', 'none')
       // check if number is visible. else hide the number
       .attr('font-size', d => this.calculateFontSize(d.value.toString()))
@@ -76,30 +81,25 @@ export class NodeDrawing implements DrawingBehavior<SimulationNode> {
     node.append('line')
       .attr('class', 'circle-arrow')
       .attr('x1', d => d.x)
-      .attr('y1', d => d.y - 100)
+      .attr('y1', d => d.y - 150)
       .attr('x2', d => d.x)
-      .attr('y2', d => d.y - 50)
+      .attr('y2', d => d.y - 100)
       .attr('stroke', 'white')
       .attr('stroke-width', 5)
       .attr('opacity', d => d.drawArrow ? 0.8 : 0)
-      .attr('marker-end', 'url(#arrowhead)')
-      .raise();
+      .attr('marker-end', 'url(#arrowhead)');
 
-    node.append('text')
-      .attr('class', 'root-name')
-      .attr('dx', 0)
-      .attr('dy', -40 * 1.1)
-      .style('text-anchor', 'middle')
-      .attr('pointer-events', 'none')
-      .attr('font-size', 32)
-      .text(d => d.lockedGraph !== undefined && d.lockedGraph.root === d ? 'root' : '');
     return node;
-
   }
 
   update(updateElement: d3.Selection<d3.BaseType, SimulationNode, any, any>): d3.Selection<d3.BaseType, SimulationNode, any, any> {
+
+    updateElement
+      .attr('class', 'node')
+      .attr('pointer-events', d => d.pointerEvents ? 'auto' : 'none');
+
     updateElement.select('.node-circle')
-      .attr('fill', (d) => d.color)
+      .attr('fill', (d) => this.colorProvider.getNodeColor(d))
       .style('stroke-width', d => {
         // if (!d.validInBST) {
         //   return 5;
@@ -140,10 +140,10 @@ export class NodeDrawing implements DrawingBehavior<SimulationNode> {
       })
       .raise()
       // animation
-      .attr('r', this.radius)
+      .filter((d: SimulationNode) => d.highlighted)
       .transition()
       .duration(400)
-      .attr('r', d => d.highlighted ? this.radius * 1.5 : this.radius)
+      .attr('r', this.radius * 1.5)
       .transition()
       .duration(500)
       .attr('r', this.radius);
@@ -164,10 +164,6 @@ export class NodeDrawing implements DrawingBehavior<SimulationNode> {
       .attr('opacity', d => d.drawArrow ? 0.8 : 0)
       .raise();
 
-    updateElement
-      .select('.root-name')
-      .text(d => d.lockedGraph !== undefined && d.lockedGraph !== null && d.lockedGraph.root === d ? 'root' : '')
-      .raise();
     return updateElement;
   }
 
