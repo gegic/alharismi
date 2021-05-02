@@ -51,8 +51,8 @@ export class SimulationArray {
     this.x = x;
     this.y = y;
     this.data.filter(d => d.node).forEach((d) => {
-      d.node.fx = this.x + d.x + d.width / 2;
-      d.node.fy = d.height / 2 + this.y;
+      d.node.x = this.x + d.x + d.width / 2;
+      d.node.y = d.height / 2 + this.y;
     });
   }
 
@@ -77,9 +77,7 @@ export class SimulationArray {
         if (!this.data[i].node) {
           continue;
         }
-        const c = this.data[i].node;
-        c.fx = null;
-        c.fy = null;
+        this.data[i].removeNode();
       }
       this.data = this.data.splice(0, size);
     }
@@ -107,7 +105,7 @@ export class SimulationArray {
       if (cell.node.value === value) {
         cell.node.highlighted = true;
         // this.simulation./repaint();
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 1000));
         cell.node.highlighted = false;
         return;
       }
@@ -126,10 +124,9 @@ export class SimulationArray {
     await this.moveForward(index);
 
     node.cx = this.data[index].x + this.x + this.cellWidth / 2;
-    node.cy = this.data[index].y + this.y;
+    node.cy = this.data[index].y + this.y + this.cellHeight / 2;
 
     await new Promise(r => setTimeout(r, 600));
-
     this.data[index].addNode(node);
     await new Promise(r => setTimeout(r, 300));
   }
@@ -143,8 +140,8 @@ export class SimulationArray {
 
       if (i + 1 < this.data.length) {
         node.cx = this.data[i + 1].x + this.x + this.cellWidth / 2;
-        node.cy = this.data[i + 1].y + this.y;
-        await new Promise(r => setTimeout(r, 300));
+        node.cy = this.data[i + 1].y + this.y + this.cellHeight / 2;
+        await new Promise(r => setTimeout(r, 600));
         this.data[i + 1].addNode(node);
         await new Promise(r => setTimeout(r, 300));
       }

@@ -50,10 +50,8 @@ export class SimulationNode implements SimulationNodeDatum {
     this.y = y;
   }
 
-  setTransform(x: number, y: number): void {
+  setTarget(x: number, y: number): void {
     this.cx = x;
     this.cy = y;
-    this.x = x;
-    this.y = y;
   }
 }

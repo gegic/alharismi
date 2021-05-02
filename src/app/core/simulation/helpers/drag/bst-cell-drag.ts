@@ -19,7 +19,6 @@ export class BstCellDrag implements DragHelper<BstCell> {
 
     d.fx = d3.event.x;
     d.fy = d3.event.y;
-    // d.setTransform(d3.event.x, d3.event.y);
     d3.select(cells[i]).style('cursor', 'grabbing');
     d3.select(cells[i]).raise();
   }
@@ -28,7 +27,6 @@ export class BstCellDrag implements DragHelper<BstCell> {
 
     d.fx = d3.event.x;
     d.fy = d3.event.y;
-    // d.setTransform(d3.event.x, d3.event.y);
 
   }
 

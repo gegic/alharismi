@@ -124,7 +124,4 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
     return this.drawingHelper.exit(exitElement);
   }
 
-  get cells(): BstCell[] {
-    return this.data.reduce((finalCells: BstCell[], tree: BinarySearchTree) => finalCells.concat(tree.data), []);
-  }
 }

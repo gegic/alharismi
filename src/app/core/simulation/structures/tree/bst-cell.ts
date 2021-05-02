@@ -12,6 +12,7 @@ export class BstCell implements SimulationNodeDatum {
   isRoot = false;
   noCollision = false;
   isMouseOver = false;
+  isValid = true;
 
   id: number | undefined;
   fx: number | null | undefined;
@@ -56,6 +57,7 @@ export class BstCell implements SimulationNodeDatum {
     this.node = d;
     this.node.fx = this.x;
     this.node.fy = this.y;
+    this.node.noCollision = true;
     this.node.pointerEvents = false;
     this.node.nodeOrder = 2;
   }

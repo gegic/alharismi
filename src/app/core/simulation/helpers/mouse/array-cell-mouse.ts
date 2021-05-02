@@ -1,4 +1,4 @@
-import {MouseHelper} from './mouse-helper';
+import {d3Element, MouseHelper} from './mouse-helper';
 import {ArrayCell} from '../../structures/array/array-cell';
 import {SimulationLoop} from '../../handlers/simulation-loop';
 import {MenuItem} from 'd3-context-menu';
@@ -13,29 +13,47 @@ export class ArrayCellMouse implements MouseHelper<ArrayCell> {
     this.simulation = simulation;
   }
 
-  mouseOver(d: ArrayCell): void {
+  mouseOver(d: ArrayCell, i: number, cells: d3Element[] | ArrayLike<d3Element>): void {
     d.isMouseOver = true;
 
     // if dragging node and cell not holding node, then attach it to array cell
-    if (!this.simulation.loop.draggedNode) {
+    if (!this.simulation.loop.draggedNode || !!d.node) {
       return;
     }
+
+    d3.select(cells[i])
+      .select('.array-cell-container')
+      .transition()
+      .duration(600)
+      .ease(d3.easeExpOut)
+      .attr('rx', 50)
+      .attr('ry', 50);
 
     this.simulation.loop.draggedNode.hoveringGrid = d;
 
     d.hoveringNode = this.simulation.loop.draggedNode;
-    this.simulation.loop.draggedNode.fx = d.parent.x + d.x + d.width / 2;
-    this.simulation.loop.draggedNode.fy = d.height / 2 + d.parent.y;
+    this.simulation.loop.draggedNode.x = d.parent.x + d.x + d.width / 2;
+    this.simulation.loop.draggedNode.y = d.height / 2 + d.parent.y;
 
     // now check if array is valid and color it accordingly
   }
 
-  mouseOut(d: ArrayCell): void {
+  mouseOut(d: ArrayCell, i: number, cells: d3Element[] | ArrayLike<d3Element>): void {
+
     d.isMouseOver = false;
 
-    if (!this.simulation.loop.draggedNode) {
+    d3.select(cells[i])
+      .select('.array-cell-container')
+      .transition()
+      .duration(600)
+      .ease(d3.easeExpOut)
+      .attr('rx', 25)
+      .attr('ry', 25);
+
+    if (!this.simulation.loop.draggedNode || !!d.node) {
       return;
     }
+
     if (d.hoveringNode !== d.node) {
       d.hoveringNode = d.node;
     }
@@ -47,8 +65,9 @@ export class ArrayCellMouse implements MouseHelper<ArrayCell> {
   }
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, ArrayCell, any, any>): d3.Selection<d3.BaseType, ArrayCell, any, any> {
-    element.on('mouseover', d => this.mouseOver(d))
-      .on('mouseout', d => this.mouseOut(d));
+    element
+      .on('mouseover', (d: ArrayCell, i: number, cells: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, cells))
+      .on('mouseout', (d: ArrayCell, i: number, cells: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, cells));
 
     return element;
   }

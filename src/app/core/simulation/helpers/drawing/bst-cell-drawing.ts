@@ -23,7 +23,7 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
       // .on('mouseover', (d, i, nodes) => this.nodeMouseOver(d, i, nodes))
       // .on('mouseout', (d, i, nodes) => this.nodeMouseOut(d, i, nodes))
       // .on('contextmenu', contextMenu(this.getContextMenu()))
-      .attr('fill', '#E2E8CE')
+      .attr('fill', d => d.isValid ? '#E2E8CE' : '#e8cece')
       .style('opacity', .9)
       .style('cursor', 'pointer')
       .attr('r', d => d.radius)
@@ -34,28 +34,17 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
     bstCell
       .append('text')
       .attr('class', 'bst-cell-empty')
-      .style('fill', 'black')
       .attr('dx', 0)
       .attr('dy', 40 / 8)
       .style('text-anchor', 'middle')
       .attr('pointer-events', 'none')
       .attr('font-size', 0)
       .raise()
-      .text('empty')
+      .style('fill', d => d.tree.isValid ? 'black' : '#860000')
+      .text(d => d.tree.isValid ? 'empty' : 'invalid')
       .transition()
       .duration(500)
       .attr('font-size', 16);
-
-    // bstCell.append('line')
-    //   .attr('class', 'circle-arrow')
-    //   .attr('x1', d => d.x)
-    //   .attr('y1', d => d.y - 150)
-    //   .attr('x2', d => d.x)
-    //   .attr('y2', d => d.y - 100)
-    //   .attr('stroke', '#E2E8CE')
-    //   .attr('stroke-width', 5)
-    //   .attr('opacity', d => d.drawArrow ? 0.8 : 0)
-    //   .attr('marker-end', 'url(#arrowhead)');
 
     bstCell
       .filter(d => !!d.descriptor)
@@ -75,12 +64,17 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
 
     updateElement
       .select('.bst-cell-circle')
-      .attr('fill', '#E2E8CE');
+      .attr('fill', d => d.isValid ? '#E2E8CE' : '#e8cece');
 
     updateElement
       .select('.bst-cell-name')
       .filter(d => !!d.descriptor)
       .text(d => d.descriptor);
+
+    updateElement
+      .select('.bst-cell-empty')
+      .style('fill', d => d.tree.isValid ? 'black' : '#860000')
+      .text(d => d.tree.isValid ? 'empty' : 'invalid');
 
     return updateElement;
   }

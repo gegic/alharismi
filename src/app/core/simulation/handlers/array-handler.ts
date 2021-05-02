@@ -67,7 +67,7 @@ export class ArrayHandler implements DrawableHandler<SimulationArray> {
 
   enter(enterElement: d3.Selection<d3.EnterElement, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
     const arrElement = this.drawingHelper.enter(enterElement);
-    this.mouseHelper.addMouseInteraction(arrElement.select('.array-bg'));
+    this.mouseHelper.addMouseInteraction(arrElement);
     this.dragHelper.addDragInteraction(arrElement);
     arrElement
       .selectAll('.array-cell')

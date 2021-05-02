@@ -22,9 +22,8 @@ export class ArrayDrawing implements DrawingHelper<SimulationArray> {
       .attr('height', 200)
       .attr('rx', 25)
       .attr('ry', 25)
-      .attr('stroke', 'white')
-      .attr('stroke-dasharray', '10')
-      .attr('stroke-width', '3')
+      .style('stroke', 'white')
+      .style('stroke-width', 2)
       .attr('fill', (arr: SimulationArray) => arr.color)
       .style('opacity', .8)
       .lower();

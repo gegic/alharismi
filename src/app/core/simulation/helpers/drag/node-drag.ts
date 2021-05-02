@@ -17,99 +17,52 @@ export class NodeDrag implements DragHelper<SimulationNode> {
   }
 
   dragStart(d: SimulationNode, i: number, nodes: Element[] | ArrayLike<Element>): void {
-    console.log('dragstart');
-
-    d.dragStartX = d.x;
-    d.dragStartY = d.y;
     d3.select('*').style('cursor', 'grabbing');
     d3.select(nodes[i]).raise();
     d3.selectAll('line').attr('pointer-events', 'none'); // remove hovering from all lines
     d.noCollision = true;
     d.pointerEvents = false;
     d.nodeOrder = 0;
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
-    d.setTransform(d3.event.x, d3.event.y);
+    d.dragStartX = d.x;
+    d.dragStartY = d.y;
+    d.x = d3.event.x;
+    d.y = d3.event.y;
+    // d.setTransform(d3.event.x, d3.event.y);
   }
 
   dragging(d: SimulationNode, i: number, nodes: Element[] | ArrayLike<Element>): void {
 
-    if (this.simulation.loop.draggedNode) {
-      // if (this.simulation.loop.draggedNode.hoveringPlaceholder) {
-      //   return;
-      // }
-      if (this.simulation.loop.draggedNode.hoveringGrid) {
-        return;
-      }
-      d.fx = d3.event.x;
-      d.fy = d3.event.y;
-      d.setTransform(d3.event.x, d3.event.y);
-    }
+    d.x = d3.event.x;
+    d.y = d3.event.y;
+    // d.setTransform(d3.event.x, d3.event.y);
     this.simulation.loop.draggedNode = d;
-
 
   }
 
   dragEnd(d: SimulationNode, i: number, nodes: Element[] | ArrayLike<Element>): void {
-    if (!d) {
-      d3.selectAll('line').attr('pointer-events', 'auto');
-      d3.selectAll('.node').attr('pointer-events', 'auto');
-      this.simulation.loop.draggedNode = null;
-      return;
-    }
+    // if (!d) {
+    //
+    //   d3.selectAll('line').attr('pointer-events', 'auto');
+    //   d3.selectAll('.node').attr('pointer-events', 'auto');
+    //   this.simulation.loop.draggedNode = null;
+    //   return;
+    // }
 
     d3.select('*').style('cursor', null);
-
-    const distanceDragged = Math.sqrt(Math.pow(d3.event.x - d.dragStartX, 2) + Math.pow(d3.event.y - d.dragStartY, 2));
-
-    d3.selectAll('circle')
-      .filter((nd: SimulationNode) => nd.isPlaceholder)
-      .attr('fill', '#E2E8CE');
-
     d3.selectAll('line').attr('pointer-events', 'auto');
     d3.selectAll('.node').attr('pointer-events', 'auto');
 
-    if (distanceDragged < 30) {
+    const distanceDragged = Math.sqrt(Math.pow(d3.event.x - d.dragStartX, 2) + Math.pow(d3.event.y - d.dragStartY, 2));
+
+    if (distanceDragged < 30 && !d.lockedGrid && !d.lockedPlaceholder) {
       // short drag, do nothing
-      if (!d.lockedGrid && !d.lockedPlaceholder) {
-        d.noCollision = false;
-        d.pointerEvents = true;
-        d.nodeOrder = 1;
-        d.fx = undefined;
-        d.fy = undefined;
-      }
+      this.freeUpNode(d);
 
       this.simulation.loop.draggedNode = null;
       return;
     }
 
-    d3.select(nodes[i]).attr('pointer-events', 'auto');
-
     if (this.simulation.loop.draggedNode) {
-
-      // are we dragging a node
-
-      // TODO
-
-      // if (this.simulation.simulationLoop.draggedNode.lockedGraph) {
-      //   const tree = this.simulation.simulationLoop.draggedNode.lockedGraph;
-      //   const treeNode = tree.d3tree.descendants().filter(n => n.data === d)[0];
-      //
-      //   if (treeNode) {
-      //     treeNode
-      //       .descendants()
-      //       .filter((d: SimulationNode) => d.data !== draggedNode)
-      //       .forEach(d => {
-      //         // d.data.tree_x = d3.event.x + d.data.tree_x - draggedNode.tree_x
-      //         d.data.tree_y = d3.event.y + d.data.tree_y - draggedNode.tree_y
-      //       })
-      //     // draggedNode.tree_x  = d3.event.x
-      //     draggedNode.tree_y = d3.event.y
-      //     if (tree.root === draggedNode) {
-      //       tree.setTransform(d3.event.x, d3.event.y)
-      //     }
-      //   }
-      // }
       const arrayCell = d3
         .selectAll('.array-cell-container')
         .data()
@@ -123,17 +76,13 @@ export class NodeDrag implements DragHelper<SimulationNode> {
           }
           arrayCell.addNode(d);
           // this.simulation.simulationLoop.repaint();
-        } else if (arrayCell.node === d) {
-          // do nothing
         } else if (arrayCell.node !== d) {
-          if (d.lockedGrid) {
-            d.lockedGrid.removeNode();
-            // this.simulation.simulationLoop.repaint();
-          }
-          arrayCell.removeNode();
-          // this.simulation.simulationLoop.repaint();
-          arrayCell.addNode(d);
-          // this.simulation.simulationLoop.repaint();
+          // if (d.lockedGrid) {
+          //   d.lockedGrid.removeNode();
+          //   // this.simulation.simulationLoop.repaint();
+          // }
+          // arrayCell.removeNode();
+          // arrayCell.addNode(d);
         }
       } else {
         if (d.lockedGrid) {
@@ -148,60 +97,19 @@ export class NodeDrag implements DragHelper<SimulationNode> {
         .data()
         .filter((bc: BstCell) => bc.isMouseOver)[0] as BstCell;
 
-      if (bstCell && !bstCell.node &&
+      if (bstCell &&
+        !bstCell.node &&
+        bstCell.tree.isValid &&
         (!d.lockedPlaceholder || bstCell.tree !== d.lockedPlaceholder.tree)) {
         bstCell.tree.add(d, bstCell);
       }
-      // this.nodes
-      //   .filter((nd: SimulationNode) => nd.isPlaceholder)
-      //   .some((nd: SimulationNode) => {
-      //     // check if there is a nearby node where aciton can be performed.
-      //     if (d === nd) {
-      //       return false;
-      //     }
-      //     const distance = Math.sqrt((d.x - nd.x) * (d.x - nd.x) + (d.y - nd.y) * (d.y - nd.y));
-      //     if (d !== nd && distance < d.radius + nd.radius) {
-      //       if (d.lockedGraph !== nd.lockedGraph && nd.lockedGraph.allowAddingChildToPlaceholder) {
-      //         // d3.selectAll('circle').filter((c: SimulationNode) => c === nd);
-      //         const tree = nd.lockedGraph;
-      //         // should handle this with in bst instead
-      //         if (tree.root.isPlaceholder) {
-      //
-      //           const root = tree.root;
-      //           if (d.lockedGraph) {
-      //             d.lockedGraph.setTransform(tree.x, tree.y);
-      //             // window.dataHandler.removeFigure(bst) TODO
-      //             d.lockedGraph.RedBlackBST = tree.RedBlackBST;
-      //           } else {
-      //             tree.root = d;
-      //             d.lockedGraph = d;
-      //           }
-      //           root.delete();
-      //           tree.updateLinks();
-      //           // repaint() TODO
-      //         } else {
-      //           const index = nd.parent.childrenidOf(nd);
-      //           tree.addChild(d, nd.parent, index);
-      //         }
-      //
-      //         return true;
-      //         // do something
-      //       }
-      //     }
-      //   });
     }
-
-    d.setTransform(d3.event.x, d3.event.y);
+    d.setTarget(d3.event.x, d3.event.y);
     d3.selectAll('line').attr('pointer-events', 'auto');
     d3.selectAll('.node').attr('pointer-events', 'auto');
-    if (!d.lockedGrid && !d.lockedPlaceholder) {
-      console.log('NONONO');
-      d.noCollision = false;
-      d.pointerEvents = true;
-      d.nodeOrder = 1;
-      d.fx = undefined;
-      d.fy = undefined;
-    }
+
+    this.freeUpNode(d);
+
     this.simulation.loop.draggedNode = null;
 
   }
@@ -215,6 +123,26 @@ export class NodeDrag implements DragHelper<SimulationNode> {
     element.call(drag);
 
     return element;
+  }
+
+  private freeUpNode(d: SimulationNode): void {
+    if (!d.lockedGrid && !d.lockedPlaceholder) {
+      d.noCollision = false;
+      d.pointerEvents = true;
+      d.nodeOrder = 1;
+      d.fx = undefined;
+      d.fy = undefined;
+    } else if (d.lockedGrid) {
+      d.noCollision = true;
+      d.pointerEvents = true;
+      d.nodeOrder = 2;
+      d.x = d.lockedGrid.parent.x + d.lockedGrid.x + d.lockedGrid.width / 2;
+      d.y = d.lockedGrid.height / 2 + d.lockedGrid.parent.y;
+    } else if (d.lockedPlaceholder) {
+      d.noCollision = true;
+      d.pointerEvents = false;
+      d.nodeOrder = 2;
+    }
   }
 
 }

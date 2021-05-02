@@ -1,4 +1,4 @@
-import {MouseHelper} from './mouse-helper';
+import {d3Element, MouseHelper} from './mouse-helper';
 import {ArrayCell} from '../../structures/array/array-cell';
 import {SimulationLoop} from '../../handlers/simulation-loop';
 import contextMenu, {MenuItem} from 'd3-context-menu';
@@ -6,6 +6,7 @@ import * as d3 from 'd3';
 import {SimulationArray} from '../../structures/array/simulation-array';
 import {SimulationNode} from '../../basics/simulation-node';
 import {Simulation} from '../../simulation';
+import {BstCell} from '../../structures/tree/bst-cell';
 
 export class ArrayMouse implements MouseHelper<SimulationArray> {
 
@@ -14,6 +15,27 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
   constructor(simulation: Simulation) {
     this.simulation = simulation;
   }
+
+  // mouseOver(d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>): void {
+  //
+  //   d3.select(arrays[i])
+  //     .select('.array-bg')
+  //     .style('stroke-width', 3)
+  //     .transition()
+  //     .duration(600)
+  //     .ease(d3.easeLinear)
+  //     .style('stroke-width', 10);
+  // }
+  //
+  // mouseOut(d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>): void {
+  //   d3.select(arrays[i])
+  //     .select('.array-bg')
+  //     .transition()
+  //     .duration(600)
+  //     .ease(d3.easeLinear)
+  //     .style('stroke-width', 3);
+  //
+  // }
 
   contextMenu(): MenuItem[] {
     return [
@@ -110,7 +132,10 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
   }
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
-    element.on('contextmenu', contextMenu(this.contextMenu()));
+    element
+      // .on('mouseover', (d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, arrays))
+      // .on('mouseout', (d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, arrays))
+      .on('contextmenu', contextMenu(this.contextMenu()));
     return element;
   }
 }

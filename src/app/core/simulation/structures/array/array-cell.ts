@@ -10,6 +10,7 @@ export class ArrayCell {
   node?: SimulationNode;
   hoveringNode?: SimulationNode;
   parent: SimulationArray;
+  isMouseOver = false;
 
   constructor(parent: SimulationArray, x: number, y: number, width: number, height: number, id: number) {
     this.parent = parent;
@@ -20,8 +21,6 @@ export class ArrayCell {
     this.id = id;
   }
 
-  isMouseOver = false;
-
   addNode(node: SimulationNode): void {
     this.node = node;
     this.hoveringNode = node;
@@ -29,6 +28,11 @@ export class ArrayCell {
     node.hoveringGrid = this;
     node.fx = this.parent.x + this.x + this.width / 2;
     node.fy = this.height / 2 + this.parent.y;
+    node.pointerEvents = true;
+    node.noCollision = true;
+    node.nodeOrder = 2;
+    node.x = this.parent.x + this.x + this.width / 2;
+    node.y = this.height / 2 + this.parent.y;
   }
 
   removeNode(): SimulationNode | null {
@@ -42,6 +46,8 @@ export class ArrayCell {
     this.hoveringNode = undefined;
     node.fx = undefined;
     node.fy = undefined;
+    node.nodeOrder = 1;
+    node.noCollision = false;
     return node;
   }
 

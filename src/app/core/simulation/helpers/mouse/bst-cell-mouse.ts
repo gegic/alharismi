@@ -22,8 +22,13 @@ export class BstCellMouse implements MouseHelper<BstCell> {
 
     const draggedNode = this.simulation.loop.draggedNode;
     const innerNode = d.node;
+    const treeValid = d.tree.isValid;
+
     let color: string;
-    if (!!innerNode) {
+
+    if (!treeValid) {
+      color = '#8d1a1a';
+    } else if (!!innerNode) {
       color = this.colorProvider.getNodeColor(innerNode);
     } else if (!!draggedNode) {
       color = this.colorProvider.getNodeColor(draggedNode);
@@ -39,7 +44,7 @@ export class BstCellMouse implements MouseHelper<BstCell> {
       .ease(d3.easeElastic)
       .style('stroke-width', 7);
 
-    if (!draggedNode || !!innerNode) {
+    if (!draggedNode || !!innerNode || !treeValid) {
       return;
     }
 
@@ -59,7 +64,11 @@ export class BstCellMouse implements MouseHelper<BstCell> {
       .ease(d3.easeElastic)
       .style('stroke-width', 0);
 
-    if (!this.simulation.loop.draggedNode) {
+    const draggedNode = this.simulation.loop.draggedNode;
+    const innerNode = d.node;
+    const treeValid = d.tree.isValid;
+
+    if (!draggedNode || !!innerNode || !treeValid) {
       return;
     }
     if (d.hoveringNode !== d.node) {
@@ -75,7 +84,8 @@ export class BstCellMouse implements MouseHelper<BstCell> {
   }
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, BstCell, any, any>): d3.Selection<d3.BaseType, BstCell, any, any> {
-    element.on('mouseover', (d: BstCell, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, nodes))
+    element
+      .on('mouseover', (d: BstCell, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, nodes))
       .on('mouseout', (d: BstCell, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, nodes));
 
     return element;

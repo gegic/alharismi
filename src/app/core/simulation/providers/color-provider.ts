@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import {SimulationNode} from '../basics/simulation-node';
 
 export class ColorProvider {
-  colorScheme = d3.scaleLinear<string, d3.RGBColor>().domain([0, 0]).range(['#4484CE', '#94618E']);
+  colorScheme = d3.scaleLinear<string, d3.RGBColor>().domain([0, 0]).range(['#5d89a8', '#63ad82', '#a3699b']);
 
   setColorScheme(values: number[]): void {
     const currentMin = Math.min(...values);
@@ -15,7 +15,7 @@ export class ColorProvider {
     if (currentMax > maximum) {
       maximum = currentMax;
     }
-    this.colorScheme = d3.scaleLinear<string, d3.RGBColor>().domain([minimum, maximum]).range(['#4484CE', '#94618E']);
+    this.colorScheme = d3.scaleLinear<string, d3.RGBColor>().domain([minimum, maximum]).range(['#5d89a8', '#63ad82', '#a3699b']);
   }
 
   getNodeColor(node: SimulationNode): string {

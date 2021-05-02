@@ -85,23 +85,23 @@ export class Simulation {
       this.canvas
     );
 
-    this.loop.setHandlers(this.nodeHandler, this.arrayHandler, this.bstHandler);
+    this.loop.setHandlers(this.nodeHandler, this.bstHandler, this.arrayHandler);
   }
 
   async get_level(): Promise<void> {
-    const nodes = this.nodeHandler.generateNodes(3, null);
+    const nodes = this.nodeHandler.generateNodes(11, null);
     this.nodeHandler.add(nodes);
-    // const arr = this.arrayHandler.create(10, 0, 0);
-    // this.arrayHandler.add(arr);
+    const arr = this.arrayHandler.create(10, 0, 0);
+    this.arrayHandler.add(arr);
     //
     // console.log(arr);
 
     const bst = this.bstHandler.create(0, 0, 0);
     this.bstHandler.add(bst);
-    //
-    // for (const n of nodes.slice(0, 12)) {
-    //  await arr.insertAt(n, 0);
-    // }
+
+    for (const n of nodes.slice(0, 3)) {
+     await arr.insertAt(n, 0);
+    }
 
   }
 }
