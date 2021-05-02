@@ -34,9 +34,9 @@ export class VisualizationViewComponent implements AfterViewInit {
     const g = this.svg
       .append('g')
       .attr('class', 'canvas');
-    this.scenarioService.canvas.next(g);
+    this.scenarioService.initSimulation(g);
     this.scenarioService.startSimulation(this.svg);
-    this.scenarioService.get_level();
+    this.scenarioService.getLevel();
   }
 
   openInPlayground(): void {

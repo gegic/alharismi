@@ -16,23 +16,26 @@ import {SimulationLink} from '../simulation/basics/simulation-link';
 import {SimulationArray} from '../simulation/structures/array/simulation-array';
 import {NodeHandler} from '../simulation/handlers/node-handler';
 import {PositionHelper} from '../simulation/helpers/position-helper';
-import {ColorHelper} from '../simulation/helpers/color-helper';
-import {SimulationHandler} from '../simulation/handlers/simulation-handler';
+import {ColorProvider} from '../simulation/providers/color-provider';
+import {SimulationLoop} from '../simulation/handlers/simulation-loop';
 import {ArrayHandler} from '../simulation/handlers/array-handler';
-import {Camera} from '../simulation/camera';
+import {Camera} from '../camera';
+import {NodeDrawing} from '../simulation/helpers/drawing/node-drawing';
+import {NodeDrag} from '../simulation/helpers/drag/node-drag';
+import {NodeMouse} from '../simulation/helpers/mouse/node-mouse';
+import {ArrayDrawing} from '../simulation/helpers/drawing/array-drawing';
+import {ArrayCellDrawing} from '../simulation/helpers/drawing/array-cell-drawing';
+import {ArrayDrag} from '../simulation/helpers/drag/array-drag';
+import {ArrayMouse} from '../simulation/helpers/mouse/array-mouse';
+import {ArrayCellMouse} from '../simulation/helpers/mouse/array-cell-mouse';
+import {Simulation} from '../simulation/simulation';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ScenarioService {
 
-  dataHandler?: DataHandler;
-  nodeHandler?: NodeHandler;
-  arrayHandler?: ArrayHandler;
-  camera?: Camera;
-  simulationHandler?: SimulationHandler;
-  canvas: BehaviorSubject<Selection<any, any, d3.BaseType, any> | undefined> =
-    new BehaviorSubject<Selection<any, any, d3.BaseType, any> | undefined>(undefined);
+  simulation?: Simulation;
 
   currentScenario: BehaviorSubject<Scenario | undefined> = new BehaviorSubject<Scenario | undefined>(undefined);
   scenarios: Scenario[];
@@ -40,55 +43,21 @@ export class ScenarioService {
   constructor(private httpClient: HttpClient) {
   }
 
+  initSimulation(canvas: Selection<any, any, any, any>): void {
+    this.simulation = new Simulation(canvas);
+  }
+
   startSimulation(svg: Selection<any, any, any, any>): void {
-    const positionHelper = new PositionHelper();
-    this.simulationHandler = new SimulationHandler();
-    this.nodeHandler = new NodeHandler(
-      positionHelper,
-      new ColorHelper(),
-      this.canvas.getValue(),
-      this.simulationHandler
-    );
+    this.simulation?.startSimulation(svg);
+  }
 
-    this.arrayHandler = new ArrayHandler(
-      this.simulationHandler,
-      this.canvas.getValue(),
-    );
-
-    this.camera = new Camera(this.canvas.getValue());
-    this.camera.setZoom(svg);
-
-    this.simulationHandler.setHandlers(this.nodeHandler, this.arrayHandler);
-    this.simulationHandler.setupSimulation();
+  getLevel(): void {
+    this.simulation?.get_level();
   }
 
   getScenarios(): Observable<Scenario[]> {
     return this.httpClient.get<Scenario[]>(`${scenariosPath}/scenarios.json`);
   }
 
-  get_level(): void {
-    const nodes = this.nodeHandler.generateNodes(10, this.isLevelComplete);
-    this.nodeHandler.add(nodes);
-    this.nodeHandler.draw();
-    const arr = this.arrayHandler.createArray(10);
-    arr.setLength(10);
-    this.arrayHandler.add(arr);
-    this.simulationHandler.repaint();
-  }
-
-  isLevelComplete(ni: SimulationNode): void {
-    if (ni) {
-      // ni.clicked();.
-    }
-    if (ni && !ni.lockedGrid) {
-      ni.fx = undefined;
-      ni.fy = undefined;
-    }
-    // const complete = this.currentLevel.isComplete(n)
-    // if (complete) {
-    //   this.currentLevel.complete = true
-    //   this.getReadyForNextLevel(n)
-    // }
-  }
 
 }

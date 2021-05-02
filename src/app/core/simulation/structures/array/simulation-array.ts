@@ -1,17 +1,6 @@
 import {Selection} from 'd3-selection';
 import {SimulationNode} from '../../basics/simulation-node';
 import {ArrayCell} from './array-cell';
-import {ArrayDrawing} from '../../behaviors/drawing/array-drawing';
-import * as d3 from 'd3';
-import {ArrayContextMenu} from '../../behaviors/context-menu/array-context-menu';
-import {MenuItem} from 'd3-context-menu';
-import {SimulationHandler} from '../../handlers/simulation-handler';
-import {ArrayCellDrawing} from '../../behaviors/drawing/array-cell-drawing';
-import {ArrayCellMouse} from '../../behaviors/mouse/array-cell-mouse';
-import {DrawingBehavior} from '../../behaviors/drawing/drawing-behavior';
-import {DragBehavior} from '../../behaviors/drag/drag-behavior';
-import {ContextMenuBehavior} from '../../behaviors/context-menu/context-menu-behavior';
-import {MouseBehavior} from '../../behaviors/mouse/mouse-behavior';
 
 export class SimulationArray {
 
@@ -24,34 +13,22 @@ export class SimulationArray {
   x: number;
   y: number;
   z: number;
+  color: string;
   isStatic: boolean;
   descriptor: string;
 
-  simulationHandler: SimulationHandler;
-  drawingBehavior: DrawingBehavior<SimulationArray>;
-  dragBehavior: DragBehavior<SimulationArray>;
-  contextMenu: ContextMenuBehavior;
-
-  constructor(drawingBehavior: DrawingBehavior<SimulationArray>,
-              dragBehavior: DragBehavior<SimulationArray>,
-              contextMenu: ContextMenuBehavior,
-              simulationHandler: SimulationHandler,
-              id: number,
-              size: number,
-              x: number,
-              y: number,
-              descriptor?: string) {
+  constructor(id: number, size: number, x: number, y: number, descriptor?: string){
     this.id = id;
-    this.size = size;
     this.cellWidth = 100;
     this.cellWidth = 100;
     this.data = [];
     this.x = x - (size * this.cellWidth) / 2;
     this.y = y - (this.cellHeight / 2);
     this.z = -2;
-    this.color = 'gainsboro';
+    this.color = 'black';
     this.isStatic = false;
     this.descriptor = descriptor ?? `array${id}`;
+    this.setSize(size);
   }
 
   add(nodes: SimulationNode[]): void {
@@ -79,32 +56,23 @@ export class SimulationArray {
     });
   }
 
-  makeGrid(count: number): void {
+  private makeGrid(count: number): void {
     let xpos = (this.cellWidth + this.cellWidth / 20) * this.data.length;
 
     const newSize = this.data.length + count;
 
     for (let column = this.data.length; column < newSize; column++) {
-      const cell = new ArrayCell(
-        new ArrayCellDrawing(),
-        new ArrayCellMouse(this.simulationHandler),
-        this, xpos,
-        0,
-        this.cellWidth,
-        this.cellHeight,
-        column
-      );
-      this.data.push(cell);
+      this.data.push(new ArrayCell(this, xpos, 0, this.cellWidth, this.cellHeight, column));
       // increment the x position. I.e. move it over by 50 (width variable)
       xpos += this.cellWidth + this.cellWidth / 20; // and a little bit of margin
     }
   }
 
-  setLength(length: number): void {
-    this.size = length;
+  setSize(size: number): void {
+    this.size = size;
 
-    if (length < this.data.length) {
-      for (let i = length ; i < this.data.length; i++)
+    if (size < this.data.length) {
+      for (let i = size ; i < this.data.length; i++)
       {
         if (!this.data[i].node) {
           continue;
@@ -113,48 +81,73 @@ export class SimulationArray {
         c.fx = null;
         c.fy = null;
       }
-      this.data = this.data.splice(0, length);
+      this.data = this.data.splice(0, size);
     }
     else {
-      this.makeGrid(length - this.data.length);
+      this.makeGrid(size - this.data.length);
     }
   }
 
-  async linearFindElement(value: number): Promise<void> {}
+  async linearFindElement(value: number): Promise<void> {
+    for (let i = 0; i < this.size; ++i) {
+      const cell = this.data[i];
+      if (!cell.node) {
+        continue;
+      }
 
-  getContextMenu(): MenuItem[] {
-    return this.contextMenu.getContextMenu();
+      cell.node.drawArrow = true;
+      cell.node.isValueVisible = true;
+
+      // // this.simulation.repaint();
+
+      await new Promise(r => setTimeout(r, 600));
+
+      cell.node.drawArrow = false;
+
+      if (cell.node.value === value) {
+        cell.node.highlighted = true;
+        // this.simulation./repaint();
+        await new Promise(r => setTimeout(r, 600));
+        cell.node.highlighted = false;
+        return;
+      }
+    }
+
+    await new Promise(r => setTimeout(r, 300));
+    throw new Error('Element not found');
   }
 
-  enter(enterElement: Selection<d3.EnterElement, SimulationArray, any, any>): Selection<d3.BaseType, SimulationArray, any, any> {
-    return this.drawingBehavior.enter(enterElement);
+
+  async insertAt(node: SimulationNode, index: number): Promise<void> {
+    if (index >= this.data.length) {
+      throw new Error('Incorrect index');
+    }
+
+    await this.moveForward(index);
+
+    node.cx = this.data[index].x + this.x + this.cellWidth / 2;
+    node.cy = this.data[index].y + this.y;
+
+    await new Promise(r => setTimeout(r, 600));
+
+    this.data[index].addNode(node);
+    await new Promise(r => setTimeout(r, 300));
   }
 
-  update(updateElement: Selection<d3.BaseType, SimulationArray, any, any>): Selection<d3.BaseType, SimulationArray, any, any> {
-    return this.drawingBehavior.update(updateElement);
-  }
+  async moveForward(index: number): Promise<void> {
+    for (let i = this.data.length - 1; i >= index; --i) {
+      if (!this.data[i].node) {
+        continue;
+      }
+      const node = this.data[i].removeNode();
 
-  exit(exitElement: Selection<d3.BaseType, SimulationArray, any, any>): Selection<d3.BaseType, SimulationArray, any, any> {
-    return this.drawingBehavior.exit(exitElement);
-  }
-
-  dragStart(i: number, nodes: Element[] | ArrayLike<Element>): void {
-    this.dragBehavior.dragStart(this, i, nodes);
-  }
-
-  dragging(i: number, nodes: Element[] | ArrayLike<Element>): void {
-    this.dragBehavior.dragging(this, i, nodes);
-  }
-
-  dragEnd(i: number, nodes: Element[] | ArrayLike<Element>): void {
-    this.dragBehavior.dragEnd(this, i, nodes);
-  }
-
-  set color(color: string) {
-    this.drawingBehavior.color = color;
-  }
-
-  get color(): string {
-    return this.drawingBehavior.color;
+      if (i + 1 < this.data.length) {
+        node.cx = this.data[i + 1].x + this.x + this.cellWidth / 2;
+        node.cy = this.data[i + 1].y + this.y;
+        await new Promise(r => setTimeout(r, 300));
+        this.data[i + 1].addNode(node);
+        await new Promise(r => setTimeout(r, 300));
+      }
+    }
   }
 }

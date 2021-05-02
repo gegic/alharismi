@@ -25,11 +25,7 @@ export class Camera {
             return;
           }
 
-          const sourceEvent = e.sourceEvent as MouseEvent | KeyboardEvent;
-
-          if (sourceEvent.shiftKey) {
-            return;
-          }
+          // const sourceEvent = e.sourceEvent as MouseEvent | KeyboardEvent;
 
           // @ts-ignore
           this.canvas.attr('transform', e.transform);
@@ -39,6 +35,4 @@ export class Camera {
     }
     svg.call(this.zoom);
   }
-
-
 }

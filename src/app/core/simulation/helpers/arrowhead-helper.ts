@@ -11,15 +11,15 @@ export class ArrowheadHelper {
 
     svg
       .append('defs')
-        .append('marker')
-        .attr('id', 'arrowhead')
-        .attr('viewBox', '0 0 10 10')
-        .attr('refX', 0)
-        .attr('refY', 5)
-        .attr('orient', 'auto')
-          .append('path')
-          .attr('d', path.toString())
-          .style('fill', 'white')
-          .style('stroke', 'none');
+      .append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '0 0 10 10')
+      .attr('refX', 0)
+      .attr('refY', 5)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', path.toString())
+      .style('fill', 'white')
+      .style('stroke', 'none');
   }
 }

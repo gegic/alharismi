@@ -1,24 +1,17 @@
-import {DrawingBehavior} from './drawing-behavior';
+import {DrawingHelper} from './drawing-helper';
 import {SimulationArray} from '../../structures/array/simulation-array';
 import * as d3 from 'd3';
+import contextMenu, {MenuItem} from 'd3-context-menu';
 import {ArrayCell} from '../../structures/array/array-cell';
-import contextMenu from 'd3-context-menu';
+import {DrawableHandler} from '../../handlers/drawable-handler';
 
-
-export class ArrayDrawing implements DrawingBehavior<SimulationArray> {
-
-  color = 'black';
+export class ArrayDrawing implements DrawingHelper<SimulationArray> {
 
   enter(enterElement: d3.Selection<d3.EnterElement, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
     const arrayElement = enterElement.append('g')
       .attr('class', 'array')
       .attr('transform', arr => `translate(${arr.x}, ${arr.y})`)
-      .style('cursor', 'pointer')
-      .call(d3.drag()
-        .on('drag', (arr: SimulationArray, i, arrays) => arr.dragging(i, arrays))
-        .on('start', (arr: SimulationArray, i, arrays) => arr.dragStart(i, arrays))
-        .on('end', (arr: SimulationArray, i, arrays) => arr.dragEnd(i, arrays)))
-      .on('contextmenu', (arr: SimulationArray) => contextMenu(arr.getContextMenu()));
+      .style('cursor', 'pointer');
 
     arrayElement
       .append('rect')
@@ -47,10 +40,7 @@ export class ArrayDrawing implements DrawingBehavior<SimulationArray> {
       .style('text-anchor', 'middle')
       .attr('pointer-events', 'none');
 
-    arrayElement
-      .selectAll('.array-cell')
-      .data((d: SimulationArray) => d.data, (cell: ArrayCell) => cell.index)
-      .join(cellEnter => cellEnter.datum().enter(cellEnter));
+    // arrayElement
 
     return arrayElement;
   }
@@ -66,21 +56,10 @@ export class ArrayDrawing implements DrawingBehavior<SimulationArray> {
       .attr('dx', arr => (arr.size * arr.cellWidth) / 2)
       .text(arr => arr.descriptor);
 
-    updateElement
-      .selectAll('.array-cell')
-      .data((d: SimulationArray) => d.data, (cell: ArrayCell) => cell.index)
-      .join(enterCell => enterCell.datum()?.enter(enterCell),
-        updateCell => updateCell.datum()?.update(updateCell),
-        exitCell => exitCell.datum()?.exit(exitCell));
-
     return updateElement;
   }
 
   exit(exitElement: d3.Selection<d3.BaseType, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
     return exitElement.remove();
   }
-
-
-
-
 }

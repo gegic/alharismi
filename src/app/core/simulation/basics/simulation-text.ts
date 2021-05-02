@@ -1,8 +1,7 @@
 import * as d3 from 'd3';
 import {Selection} from 'd3-selection';
-import {Drawable} from '../drawable';
 
-export class SimulationText implements Drawable {
+export class SimulationText {
 
   text: string;
   x: number;

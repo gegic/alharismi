@@ -5,100 +5,102 @@ import * as d3 from 'd3';
 import {SimulationArray} from '../structures/array/simulation-array';
 import {ArrayCell} from '../structures/array/array-cell';
 import {PositionHelper} from '../helpers/position-helper';
-import {ColorHelper} from '../helpers/color-helper';
+import {ColorProvider} from '../providers/color-provider';
 import {DrawableHandler} from './drawable-handler';
-import {SimulationHandler} from './simulation-handler';
-import contextMenu, {MenuItem} from 'd3-context-menu';
-import {NodeDrawing} from '../behaviors/drawing/node-drawing';
-import {NodeMouse} from '../behaviors/mouse/node-mouse';
-import {NodeContextMenu} from '../behaviors/context-menu/node-context-menu';
-import {NodeDrag} from '../behaviors/drag/node-drag';
+import {SimulationLoop} from './simulation-loop';
+import contextMenu from 'd3-context-menu';
+import {DrawingHelper} from '../helpers/drawing/drawing-helper';
+import {DragHelper} from '../helpers/drag/drag-helper';
+import {MouseHelper} from '../helpers/mouse/mouse-helper';
+import {Simulation} from '../simulation';
 
-export class NodeHandler implements DrawableHandler {
+export class NodeHandler implements DrawableHandler<SimulationNode> {
 
-  positionHelper: PositionHelper;
-  colorHelper: ColorHelper;
-  simulationHandler: SimulationHandler;
+  drawingHelper: DrawingHelper<SimulationNode>;
+  dragHelper: DragHelper<SimulationNode>;
+  mouseHelper: MouseHelper<SimulationNode>;
+
+  simulation: Simulation;
+
+  colorProvider: ColorProvider;
 
   maxId = 0;
-  decimalDigits = 0;
-
-  nodes: SimulationNode[] = [];
-  invisibleNodes: SimulationNode[] = [];
+  data: SimulationNode[] = [];
 
   canvas: Selection<any, any, any, any>;
 
-  constructor(positionHelper: PositionHelper,
-              colorHelper: ColorHelper,
+
+  constructor(drawingHelper: DrawingHelper<SimulationNode>,
+              dragHelper: DragHelper<SimulationNode>,
+              mouseHelper: MouseHelper<SimulationNode>,
               canvas: Selection<any, any, any, any>,
-              simulationHandler: SimulationHandler) {
-    this.positionHelper = positionHelper;
-    this.colorHelper = colorHelper;
+              simulation: Simulation,
+              colorProvider: ColorProvider) {
+    this.drawingHelper = drawingHelper;
+    this.dragHelper = dragHelper;
+    this.mouseHelper = mouseHelper;
     this.canvas = canvas;
-    this.simulationHandler = simulationHandler;
+    this.simulation = simulation;
+    this.colorProvider = colorProvider;
+  }
+
+  create(value: number, xPos: number, yPos: number): SimulationNode {
+    return new SimulationNode(value, this.maxId++, xPos, yPos);
   }
 
   add(obj: undefined | SimulationNode | SimulationNode[]): SimulationNode | SimulationNode[] {
     let values: number[];
     if (Array.isArray(obj)) {
       values = obj.map(sn => sn.value);
-      obj.forEach(d => this.nodes.push(d));
+      obj.forEach(d => {
+        this.data.push(d);
+        // this.simulation.loop.nodes.push(d);
+      });
     } else {
       if (!obj) {
-        obj = new SimulationNode(
-          new NodeDrawing(),
-          new NodeMouse(),
-          new NodeDrag(this.simulationHandler),
-          new NodeContextMenu(),
-          this.generateRandomValue(),
-          this.maxId++,
-          0,
-          0
-        );
+        obj = this.create(this.generateRandomValue(), 0, 0);
       }
       values = [obj.value];
-      this.nodes.push(obj);
+      this.data.push(obj);
+      // this.simulation.loop.nodes.push(obj);
     }
 
-    this.colorHelper.setColorScheme(values);
+    this.colorProvider.setColorScheme(values);
     return obj;
   }
 
-  generateRandomValue(n = 100): number {
-    return parseFloat((Math.random() * n - n / 2).toFixed(this.decimalDigits));
+  generateRandomValue(n = 100, fractionDigits = 1): number {
+    return parseFloat((Math.random() * n - n / 2).toFixed(fractionDigits));
   }
 
   draw(): void {
-
-    this.simulationHandler.simulation.nodes(this.nodes.concat(this.invisibleNodes));
-
+    this.data.sort((a, b) => b.nodeOrder - a.nodeOrder);
     this.canvas
       .selectAll('.node')
-      .data(this.nodes, (d: SimulationNode) => d.id)
-      .join(this.performEnter,
-        this.performUpdate,
-        this.performExit);
+      .data(this.data, (d: SimulationNode) => d.id)
+      .join(
+        (enterElement) => this.enter(enterElement),
+        (updateElement) => this.update(updateElement),
+        (exitElement) => this.exit(exitElement)
+      );
   }
 
-  performEnter(enterElement: d3.Selection<d3.EnterElement, SimulationNode, any, any>): Selection<d3.BaseType, SimulationNode, any, any> {
-    if (enterElement.data().length === 1) {
+  enter(enterElement: d3.Selection<d3.EnterElement, SimulationNode, any, any>): d3.Selection<d3.BaseType, SimulationNode, any, any> {
+    const nodeElement = this.drawingHelper.enter(enterElement);
+    this.mouseHelper.addMouseInteraction(nodeElement.select('.node-circle'));
+    this.dragHelper.addDragInteraction(nodeElement);
 
-    }
-    return undefined;
+    return nodeElement;
   }
 
-  performUpdate(updateElement: d3.Selection<d3.BaseType, SimulationNode, any, any>): Selection<d3.BaseType, SimulationNode, any, any> {
-    if (updateElement.data().length > 0) {
-      return updateElement.datum().update(updateElement);
-    }
-    return undefined;
+  update(updateElement: d3.Selection<d3.BaseType, SimulationNode, any, any>): d3.Selection<d3.BaseType, SimulationNode, any, any> {
+    this.drawingHelper.update(updateElement);
+    return updateElement;
   }
 
-  performExit(exitElement: d3.Selection<d3.BaseType, SimulationNode, any, any>): Selection<d3.BaseType, SimulationNode, any, any> {
-    if (exitElement.data().length > 0) {
-      return exitElement.datum().exit(exitElement);
-    }
-    return undefined;
+  exit(exitElement: d3.Selection<d3.BaseType, SimulationNode, any, any>): d3.Selection<d3.BaseType, SimulationNode, any, any> {
+    this.drawingHelper.exit(exitElement);
+    return exitElement;
   }
 
   remove(obj: SimulationNode | SimulationNode[]): void {
@@ -111,35 +113,30 @@ export class NodeHandler implements DrawableHandler {
   }
 
   private removeNode(n): void {
-    const index = this.nodes.indexOf(n);
-    if (index !== -1) {
-      this.nodes.splice(index, 1);
+    const dataIndex = this.data.indexOf(n);
+    // const forceIndex = this.simulation.loop.nodes.indexOf(n);
+    if (dataIndex !== -1) {
+      this.data.splice(dataIndex, 1);
     }
+    // if (forceIndex !== -1) {
+    //   // this.simulation.loop.nodes.splice(forceIndex, 1);
+    // }
   }
 
-  getRandomNode(noRoot: boolean): SimulationNode {
-    const randomNodes = this.nodes.filter(d => !d.isPlaceholder && !(d.children && !d.parent));
-    return randomNodes[Math.floor(Math.random() * (randomNodes.length - 1))];
+  clear(): void {
+    this.data = [];
+    // todo repaint()
   }
 
   generateNodes(n: number, onClick: (nodeInfo: SimulationNode) => void): SimulationNode[] {
     const nodes: SimulationNode[] = [];
     for (let i = 0; i < n; ++i) {
-      const rand = this.generateRandomValue();
+      const rand = this.generateRandomValue(n);
       if (nodes.some(d => d.value === rand)) {
         continue;
       }
-      const pos = this.positionHelper.createRandomPointOnCircumference([0, 0], 1);
-      const node = new SimulationNode(
-        new NodeDrawing(),
-        new NodeMouse(),
-        new NodeDrag(this.simulationHandler),
-        new NodeContextMenu(),
-        rand,
-        this.maxId++,
-        pos[0] + 0,
-        pos[1] + 0
-      );
+      // const pos = this.positionHelper.createRandomPointOnCircumference([0, 0], 1);
+      const node = this.create(rand, 0, 0);
       nodes.push(node);
     }
     nodes.forEach(c => {
