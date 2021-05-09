@@ -1,7 +1,7 @@
 import {d3Element, MouseHelper} from './mouse-helper';
 import {ArrayCell} from '../../structures/array/array-cell';
 import {SimulationLoop} from '../../handlers/simulation-loop';
-import contextMenu, {MenuItem} from 'd3-context-menu';
+import contextMenu, {ContextMenuFn, MenuItem} from 'd3-context-menu';
 import * as d3 from 'd3';
 import {SimulationArray} from '../../structures/array/simulation-array';
 import {SimulationNode} from '../../basics/simulation-node';
@@ -44,8 +44,8 @@ export class NodeMouse implements MouseHelper<SimulationNode> {
       .attr('r', defaultRadius);
   }
 
-  contextMenu(): MenuItem[] {
-    return [
+  contextMenu(d: SimulationNode, i: number, nodes: d3Element[] | ArrayLike<d3Element>): void {
+    const menu = [
       {
         title: 'Set value',
         action: async (elm: SimulationNode) => {
@@ -64,18 +64,26 @@ export class NodeMouse implements MouseHelper<SimulationNode> {
         }
       },
       {
+        title: 'Info log',
+        action: async (elm: SimulationNode) => {
+          console.log(elm);
+        }
+      },
+      {
         title: 'Delete',
         action: async (elm) => {
-          // elm.delete(); TODO
+          this.simulation.nodeHandler.remove(elm);
         }
       }
     ];
+
+    contextMenu(menu)(d, i);
   }
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, SimulationNode, any, any>): d3.Selection<d3.BaseType, SimulationNode, any, any> {
     element.on('mouseover', (d: SimulationNode, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, nodes))
       .on('mouseout', (d: SimulationNode, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, nodes))
-      .on('contextmenu', contextMenu(this.contextMenu()));
+      .on('contextmenu', (d: SimulationNode, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.contextMenu(d, i, nodes));
     return element;
   }
 }

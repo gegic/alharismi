@@ -18,7 +18,7 @@ declare interface Config {
   position?: Position | ((d: any) => Position);
 }
 
-type ContextMenuFn<DataType> = (data: DataType, index: number) => void;
+export type ContextMenuFn<DataType> = (data: DataType, index: number) => void;
 
 declare function contextMenu<DataType>(menuItems: MenuItem[], onOpen?: () => void): ContextMenuFn<DataType>;
 declare function contextMenu<DataType>(menuItems: MenuItem[], config: Config): ContextMenuFn<DataType>;

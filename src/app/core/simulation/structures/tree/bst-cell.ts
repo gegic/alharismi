@@ -1,7 +1,7 @@
 import {SimulationNodeDatum} from 'd3-force';
 import {SimulationNode} from '../../basics/simulation-node';
 import {SimulationArray} from '../array/simulation-array';
-import {BinarySearchTree} from './binary-search-tree';
+import {BinarySearchTree} from './binary-search-tree/binary-search-tree';
 import {Binary} from '@angular/compiler';
 import {SimulationLink} from '../../basics/simulation-link';
 
@@ -19,8 +19,8 @@ export class BstCell implements SimulationNodeDatum {
   fy: number | null | undefined;
   vx: number | undefined;
   vy: number | undefined;
-  x: number | undefined;
-  y: number | undefined;
+  _x: number | undefined;
+  _y: number | undefined;
   cx: number | undefined;
   cy: number | undefined;
   graphX: number | undefined;
@@ -53,6 +53,11 @@ export class BstCell implements SimulationNodeDatum {
     this.graphY = y;
   }
 
+  fixedMove(x: number, y: number): void {
+    this.fx = x;
+    this.fy = y;
+  }
+
   setNode(d: SimulationNode): void {
     this.node = d;
     this.node.fx = this.x;
@@ -64,11 +69,39 @@ export class BstCell implements SimulationNodeDatum {
 
   removeNode(): SimulationNode {
     const d = this.node;
+    if (!d) {
+      return null;
+    }
     this.node = undefined;
     d.fx = undefined;
     d.fy = undefined;
+    d.noCollision = false;
     d.pointerEvents = true;
+    d.hoveringPlaceholder = undefined;
+    d.lockedPlaceholder = undefined;
     d.nodeOrder = 1;
     return d;
+  }
+
+  get x(): number {
+    return this._x;
+  }
+
+  set x(val: number) {
+    this._x = val;
+    if (this.node) {
+      this.node.x = val;
+    }
+  }
+
+  get y(): number {
+    return this._y;
+  }
+
+  set y(val: number) {
+    this._y = val;
+    if (this.node) {
+      this.node.y = val;
+    }
   }
 }

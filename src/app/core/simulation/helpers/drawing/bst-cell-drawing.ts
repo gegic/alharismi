@@ -64,7 +64,7 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
 
     updateElement
       .select('.bst-cell-circle')
-      .attr('fill', d => d.isValid ? '#E2E8CE' : '#e8cece');
+      .attr('fill', d => d.tree.isValid ? '#E2E8CE' : '#e8cece');
 
     updateElement
       .select('.bst-cell-name')
@@ -80,27 +80,7 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
   }
 
   exit(exitElement: d3.Selection<d3.BaseType, BstCell, any, any>): d3.Selection<d3.BaseType, BstCell, any, any> {
-    exitElement
-      .select('.bst-cell-circle')
-      .transition()
-      .duration(500)
-      .attr('r', 0);
-
-    exitElement
-      .select('.bst-cell-empty')
-      .transition()
-      .duration(500)
-      .style('opacity', 0);
-
-    exitElement
-      .select('.bst-cell-name')
-      .transition()
-      .duration(500)
-      .attr('font-size', 0);
-
-    return exitElement.transition()
-      .duration(500)
-      .remove().selection();
+    return exitElement.remove();
   }
 
 }

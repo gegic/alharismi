@@ -17,16 +17,14 @@ export class BstCellDrag implements DragHelper<BstCell> {
 
   dragStart(d: BstCell, i: number, cells: Element[] | ArrayLike<Element>): void {
 
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
+    d.fixedMove(d3.event.x, d3.event.y);
     d3.select(cells[i]).style('cursor', 'grabbing');
     d3.select(cells[i]).raise();
   }
 
   dragging(d: BstCell, i: number, cells: Element[] | ArrayLike<Element>): void {
 
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
+    d.fixedMove(d3.event.x, d3.event.y);
 
   }
 

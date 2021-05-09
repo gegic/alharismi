@@ -20,6 +20,7 @@ import {BstCellDrawing} from './helpers/drawing/bst-cell-drawing';
 import {BstCellDrag} from './helpers/drag/bst-cell-drag';
 import {BstCellMouse} from './helpers/mouse/bst-cell-mouse';
 import {LinkDrawingHelper} from './helpers/drawing/link-drawing-helper';
+import {BstMouse} from './helpers/mouse/bst-mouse';
 
 export class Simulation {
 
@@ -77,7 +78,7 @@ export class Simulation {
       this,
       null,
       new BstDrawing(),
-      null,
+      new BstMouse(this),
       new BstCellDrawing(),
       new BstCellDrag(this),
       new BstCellMouse(this, colorProvider),
@@ -90,7 +91,9 @@ export class Simulation {
 
   async get_level(): Promise<void> {
     const nodes = this.nodeHandler.generateNodes(11, null);
+    const anotherNode = this.nodeHandler.create(25, 0, 0);
     this.nodeHandler.add(nodes);
+    this.nodeHandler.add(anotherNode);
     const arr = this.arrayHandler.create(10, 0, 0);
     this.arrayHandler.add(arr);
     //

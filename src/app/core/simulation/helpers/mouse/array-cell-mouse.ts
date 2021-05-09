@@ -32,8 +32,7 @@ export class ArrayCellMouse implements MouseHelper<ArrayCell> {
     this.simulation.loop.draggedNode.hoveringGrid = d;
 
     d.hoveringNode = this.simulation.loop.draggedNode;
-    this.simulation.loop.draggedNode.x = d.parent.x + d.x + d.width / 2;
-    this.simulation.loop.draggedNode.y = d.height / 2 + d.parent.y;
+    this.simulation.loop.draggedNode.move(d.parent.x + d.x + d.width / 2, d.height / 2 + d.parent.y);
 
     // now check if array is valid and color it accordingly
   }

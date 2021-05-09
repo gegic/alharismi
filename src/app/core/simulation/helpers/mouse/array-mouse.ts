@@ -1,12 +1,13 @@
 import {d3Element, MouseHelper} from './mouse-helper';
 import {ArrayCell} from '../../structures/array/array-cell';
 import {SimulationLoop} from '../../handlers/simulation-loop';
-import contextMenu, {MenuItem} from 'd3-context-menu';
+import contextMenu, {ContextMenuFn, MenuItem} from 'd3-context-menu';
 import * as d3 from 'd3';
 import {SimulationArray} from '../../structures/array/simulation-array';
 import {SimulationNode} from '../../basics/simulation-node';
 import {Simulation} from '../../simulation';
 import {BstCell} from '../../structures/tree/bst-cell';
+import {BinarySearchTree} from '../../structures/tree/binary-search-tree/binary-search-tree';
 
 export class ArrayMouse implements MouseHelper<SimulationArray> {
 
@@ -37,8 +38,8 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
   //
   // }
 
-  contextMenu(): MenuItem[] {
-    return [
+  contextMenu(d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>): void {
+    const menu = [
       {
         title: 'Set size',
         action: async (elm: SimulationArray) => {
@@ -50,15 +51,6 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
             parsed = 10;
           }
           elm.setSize(parsed);
-        }
-      },
-      {
-        title: 'Reveal all',
-        action: async (elm: SimulationArray) => {
-
-          elm.data.filter((d: ArrayCell) => d.node).forEach((d: ArrayCell) => {
-            d.node.isValueVisible = true;
-          });
         }
       },
       {
@@ -125,17 +117,32 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
             alert('Value invalid');
             return;
           }
-          // await arr.insertAt(, index);
+          const node = this.simulation.nodeHandler.create(newValue, arr.x, arr.y - 200);
+          this.simulation.nodeHandler.add(node);
+          await arr.insertAt(node, index);
+        }
+      },
+      {
+        title: 'Delete',
+        action: async (arr: SimulationArray) => {
+          const index = parseFloat(prompt('Which index would you like to remove?'));
+          if (isNaN(index)) {
+            alert('Value invalid');
+            return;
+          }
+          await arr.deleteAt(index);
         }
       }
     ];
+
+    contextMenu(menu)(d, i);
   }
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
     element
       // .on('mouseover', (d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, arrays))
       // .on('mouseout', (d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, arrays))
-      .on('contextmenu', contextMenu(this.contextMenu()));
+      .on('contextmenu', (d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.contextMenu(d, i, arrays));
     return element;
   }
 }

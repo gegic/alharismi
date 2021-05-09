@@ -8,7 +8,7 @@ import {ColorProvider} from '../providers/color-provider';
 import {SimulationText} from '../basics/simulation-text';
 import {DrawableHandler} from './drawable-handler';
 import {SimulationArray} from '../structures/array/simulation-array';
-import {BinarySearchTree} from '../structures/tree/binary-search-tree';
+import {BinarySearchTree} from '../structures/tree/binary-search-tree/binary-search-tree';
 import {BstCell} from '../structures/tree/bst-cell';
 import {SimulationLink} from '../basics/simulation-link';
 
@@ -89,9 +89,6 @@ export class SimulationLoop {
 
         this.nodeElements
           ?.attr('transform', (d: SimulationNode) => {
-            if (d.lockedPlaceholder) {
-              return `translate(${d.lockedPlaceholder.x}, ${d.lockedPlaceholder.y})`;
-            }
             return `translate(${d.x}, ${d.y})`;
           });
 

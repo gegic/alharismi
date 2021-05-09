@@ -1,6 +1,6 @@
 import {DrawableHandler} from './drawable-handler';
 import {SimulationNode} from '../basics/simulation-node';
-import {BinarySearchTree} from '../structures/tree/binary-search-tree';
+import {BinarySearchTree} from '../structures/tree/binary-search-tree/binary-search-tree';
 import * as d3 from 'd3';
 import {DragHelper} from '../helpers/drag/drag-helper';
 import {DrawingHelper} from '../helpers/drawing/drawing-helper';
@@ -72,6 +72,7 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
 
   enter(enterElement: d3.Selection<d3.EnterElement, BinarySearchTree, any, any>): d3.Selection<d3.BaseType, BinarySearchTree, any, any> {
     const treeElement = this.drawingHelper.enter(enterElement);
+    this.mouseHelper.addMouseInteraction(treeElement);
     treeElement
       .selectAll('.bst-cell')
       .data((d: BinarySearchTree) => d.data, (cell: BstCell) => cell.id)

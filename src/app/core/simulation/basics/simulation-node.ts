@@ -54,4 +54,14 @@ export class SimulationNode implements SimulationNodeDatum {
     this.cx = x;
     this.cy = y;
   }
+
+  move(x: number, y: number): void {
+    if (!this.noCollision) {
+      this.cx = x;
+      this.cy = y;
+    } else {
+      this.x = x;
+      this.y = y;
+    }
+  }
 }

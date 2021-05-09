@@ -51,8 +51,7 @@ export class SimulationArray {
     this.x = x;
     this.y = y;
     this.data.filter(d => d.node).forEach((d) => {
-      d.node.x = this.x + d.x + d.width / 2;
-      d.node.y = d.height / 2 + this.y;
+      d.node.move(this.x + d.x + d.width / 2, d.height / 2 + this.y);
     });
   }
 
@@ -115,13 +114,27 @@ export class SimulationArray {
     throw new Error('Element not found');
   }
 
+  async deleteAt(index: number): Promise<SimulationNode> {
+    if (index >= this.data.length || !this.data[index].node) {
+      throw new Error('Incorrect index');
+    }
+
+    const node = this.data[index].removeNode();
+
+    node.setTarget(this.x - 100, this.y - 100);
+
+    this.move(index, false);
+
+    return node;
+
+  }
 
   async insertAt(node: SimulationNode, index: number): Promise<void> {
     if (index >= this.data.length) {
       throw new Error('Incorrect index');
     }
 
-    await this.moveForward(index);
+    await this.move(index, true);
 
     node.cx = this.data[index].x + this.x + this.cellWidth / 2;
     node.cy = this.data[index].y + this.y + this.cellHeight / 2;
@@ -131,20 +144,27 @@ export class SimulationArray {
     await new Promise(r => setTimeout(r, 300));
   }
 
-  async moveForward(index: number): Promise<void> {
-    for (let i = this.data.length - 1; i >= index; --i) {
+  async move(index: number, forward: boolean): Promise<void> {
+    let i = forward ? this.data.length - 1 : index + 1;
+    const step = forward ? 1 : -1;
+
+    while ((forward && i >= index) || (!forward && i < this.data.length)) {
       if (!this.data[i].node) {
+        i -= step;
         continue;
       }
+
       const node = this.data[i].removeNode();
 
-      if (i + 1 < this.data.length) {
-        node.cx = this.data[i + 1].x + this.x + this.cellWidth / 2;
-        node.cy = this.data[i + 1].y + this.y + this.cellHeight / 2;
-        await new Promise(r => setTimeout(r, 600));
-        this.data[i + 1].addNode(node);
-        await new Promise(r => setTimeout(r, 300));
+      if (i + step > this.data.length || i + step < 0) {
+        continue;
       }
-    }
+
+      node.cx = this.data[i + step].x + this.x + this.cellWidth / 2;
+      node.cy = this.data[i + step].y + this.y + this.cellHeight / 2;
+      await new Promise(r => setTimeout(r, 600));
+      this.data[i + step].addNode(node);
+      await new Promise(r => setTimeout(r, 300));    }
+
   }
 }

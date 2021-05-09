@@ -80,10 +80,10 @@ export class NodeDrawing implements DrawingHelper<SimulationNode> {
 
     node.append('line')
       .attr('class', 'circle-arrow')
-      .attr('x1', d => d.x)
-      .attr('y1', d => d.y - 150)
-      .attr('x2', d => d.x)
-      .attr('y2', d => d.y - 100)
+      .attr('x1', 0)
+      .attr('y1', -150)
+      .attr('x2', 0)
+      .attr('y2', -100)
       .attr('stroke', 'white')
       .attr('stroke-width', 5)
       .attr('opacity', d => d.drawArrow ? 0.8 : 0)
@@ -161,6 +161,10 @@ export class NodeDrawing implements DrawingHelper<SimulationNode> {
 
     updateElement
       .select('.circle-arrow')
+      .attr('x1', 0)
+      .attr('y1', -150)
+      .attr('x2', 0)
+      .attr('y2', -100)
       .attr('opacity', d => d.drawArrow ? 0.8 : 0)
       .raise();
 
@@ -168,27 +172,7 @@ export class NodeDrawing implements DrawingHelper<SimulationNode> {
   }
 
   exit(exitElement: d3.Selection<d3.BaseType, SimulationNode, any, any>): d3.Selection<d3.BaseType, SimulationNode, any, any> {
-    exitElement
-      .select('.node-circle')
-      .transition()
-      .duration(500)
-      .attr('r', 0);
-
-    exitElement
-      .select('.circle-value')
-      .transition()
-      .duration(500)
-      .style('opacity', 0);
-
-    exitElement
-      .select('.circle-name')
-      .transition()
-      .duration(500)
-      .attr('font-size', 0);
-
-    return exitElement.transition()
-      .duration(500)
-      .remove().selection();
+    return exitElement.remove();
   }
 
   private calculateFontSize(value: string): number {

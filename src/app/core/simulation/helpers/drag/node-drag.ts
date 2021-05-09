@@ -25,15 +25,13 @@ export class NodeDrag implements DragHelper<SimulationNode> {
     d.nodeOrder = 0;
     d.dragStartX = d.x;
     d.dragStartY = d.y;
-    d.x = d3.event.x;
-    d.y = d3.event.y;
+    d.move(d3.event.x, d3.event.y);
     // d.setTransform(d3.event.x, d3.event.y);
   }
 
   dragging(d: SimulationNode, i: number, nodes: Element[] | ArrayLike<Element>): void {
 
-    d.x = d3.event.x;
-    d.y = d3.event.y;
+    d.move(d3.event.x, d3.event.y);
     // d.setTransform(d3.event.x, d3.event.y);
     this.simulation.loop.draggedNode = d;
 
@@ -136,8 +134,7 @@ export class NodeDrag implements DragHelper<SimulationNode> {
       d.noCollision = true;
       d.pointerEvents = true;
       d.nodeOrder = 2;
-      d.x = d.lockedGrid.parent.x + d.lockedGrid.x + d.lockedGrid.width / 2;
-      d.y = d.lockedGrid.height / 2 + d.lockedGrid.parent.y;
+      d.move(d.lockedGrid.parent.x + d.lockedGrid.x + d.lockedGrid.width / 2, d.lockedGrid.height / 2 + d.lockedGrid.parent.y)
     } else if (d.lockedPlaceholder) {
       d.noCollision = true;
       d.pointerEvents = false;
