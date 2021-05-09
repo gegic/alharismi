@@ -4,20 +4,13 @@ import {SimulationLink} from '../../../basics/simulation-link';
 import {SimulationGraph} from '../simulation-graph';
 import {BstCell} from '../bst-cell';
 import {BstCellMouse} from '../../../helpers/mouse/bst-cell-mouse';
+import {BstCellDrag} from '../../../helpers/drag/bst-cell-drag';
 
 export class BinarySearchTree extends SimulationGraph {
-  id: number;
-
-  x: number;
-  y: number;
-
-  z = -1;
-  isValid = true;
-  _data: (BstCell | undefined)[] = [];
-  links: SimulationLink[] = [];
-  size = 0;
 
   treeHierarchy?: d3.HierarchyNode<BstCell>;
+  children: { [id: number]: BstCell[] } = {};
+  parents: { [id: number]: BstCell } = {};
 
   constructor(id: number, x: number, y: number) {
     super();
@@ -28,21 +21,34 @@ export class BinarySearchTree extends SimulationGraph {
   }
 
   setRoot(): void {
-    const root = new BstCell(this, 1, this.x, this.y);
+    const root = new BstCell(this, this.maxId++, this.x, this.y);
     root.descriptor = `bst_${this.id}`;
     root.isRoot = true;
-    this.addCell(root);
+    this.addCell(root, null);
   }
 
-  addCell(cell: BstCell): void {
-    this.setData(cell);
-    this.size++;
+  addCell(cell: BstCell, parent: BstCell | null, left = true): void {
+    const childIndex = left ? 0 : 1;
+    this.data.push(cell);
+    const parentId = !!parent ? parent.id : -1;
+    if (!this.children[parentId]) {
+      this.children[parentId] = [];
+    }
+    this.children[parentId][childIndex] = cell;
+    this.parents[cell.id] = parent;
   }
 
   deleteCell(cell: BstCell): void {
     this.links = this.links.filter((sl: SimulationLink) => sl.target !== cell && sl.source !== cell);
-    this.removeData(cell);
-    this.size--;
+    this.data = this.data.filter(c => c !== cell);
+    this.children[cell.id]?.forEach(c => {
+      delete this.parents[c.id];
+    });
+    const parent = this.parents[cell.id];
+    const childIndex = this.children[parent.id].findIndex(c => c === cell);
+    delete this.children[parent.id][childIndex];
+    delete this.children[cell.id];
+    delete this.parents[cell.id];
   }
 
   async add(d: SimulationNode, bstCell: BstCell): Promise<void> {
@@ -62,16 +68,15 @@ export class BinarySearchTree extends SimulationGraph {
   }
 
   addChildCells(cell: BstCell): void {
-    const cells = [
-      new BstCell(this, 2 * cell.id, cell.x, cell.y),
-      new BstCell(this, 2 * cell.id + 1, cell.x, cell.y)
-    ];
+    const leftChild = new BstCell(this, this.maxId++, cell.x, cell.y);
+    const rightChild = new BstCell(this, this.maxId++, cell.x, cell.y);
 
-    cells.forEach((c: BstCell) => this.addCell(c));
+    this.addCell(leftChild, cell, false);
+    this.addCell(rightChild, cell, true);
 
     this.links.push(
-      new SimulationLink(cell, cells[0]),
-      new SimulationLink(cell, cells[1])
+      new SimulationLink(cell, leftChild),
+      new SimulationLink(cell, rightChild)
     );
   }
 
@@ -84,7 +89,7 @@ export class BinarySearchTree extends SimulationGraph {
 
   alignForces(): void {
     this.treeHierarchy = d3
-      .hierarchy(this.getData(1), (d: BstCell) => {
+      .hierarchy(this.getRoot(), (d: BstCell) => {
         const children: BstCell[] = [];
         const leftChild = this.getLeftChild(d);
         const rightChild = this.getRightChild(d);
@@ -119,16 +124,15 @@ export class BinarySearchTree extends SimulationGraph {
       cell.setTarget(cell.graphX, cell.graphY);
       return;
     }
-
   }
 
   async find(value: number): Promise<BstCell | null> {
 
-    if (this.size === 0) {
+    if (this.data.length === 0) {
       return null;
     }
 
-    let checkingCell = this.data[0];
+    let checkingCell = this.getRoot();
 
     while (checkingCell) {
       if (!checkingCell.node) {
@@ -176,7 +180,7 @@ export class BinarySearchTree extends SimulationGraph {
     this.deleteCell(rightChild);
 
     this.alignForces();
-    console.log(this._data);
+    console.log(this.data);
 
     return target.removeNode();
   }
@@ -188,7 +192,12 @@ export class BinarySearchTree extends SimulationGraph {
     this.deleteCell(freeCell);
     this.deleteCell(target);
 
-    await this.switchSubtree(takenCell, target);
+    if (leftChild === takenCell) {
+      this.children[parent.id][0] = takenCell;
+    } else {
+      this.children[parent.id][1] = takenCell;
+    }
+    this.parents[takenCell.id] = parent;
 
     const node = target.removeNode();
 
@@ -206,7 +215,7 @@ export class BinarySearchTree extends SimulationGraph {
     }
     this.alignForces();
 
-    console.log(this._data);
+    console.log(this.data);
     return node;
   }
 
@@ -235,44 +244,39 @@ export class BinarySearchTree extends SimulationGraph {
     } else if (!substituteLeft.node || !substituteRight.node) {
       await this.deleteOnlyChild(substituteCell, substituteLeft, substituteRight);
     }
-    console.log(this._data);
+    console.log(this.data);
 
     return node;
   }
 
-  async switchSubtree(sourceSubtreeRoot: BstCell, destinationCell: BstCell): Promise<void> {
-    let parentId: number;
-
-    const queue: number[] = [];
-
-    const generator = this.bfTraversal(sourceSubtreeRoot);
-
-    queue.push(destinationCell.id);
-
-    while (queue.length > 0) {
-      parentId = queue.shift();
-
-      const next = generator.next();
-
-      if (next.done) {
-        return;
-      }
-
-      const cell: BstCell = next.value;
-
-      const oldId = cell.id;
-      this.removeData(cell);
-      cell.id = parentId;
-      this.setData(cell);
-
-      if (this.getData(oldId * 2 + 1)) {
-        queue.push(parentId * 2 + 1);
-      }
-      if (this.getData(oldId * 2)) {
-        queue.push(parentId * 2);
-      }
-    }
-  }
+  // async switchSubtree(sourceSubtreeRoot: BstCell, destinationIndex: number): Promise<void> {
+  //   let parentId: number;
+  //   const queue: number[] = [];
+  //
+  //   const generator = this.bfTraversal(sourceSubtreeRoot);
+  //   queue.push(destinationIndex);
+  //
+  //   while (queue.length > 0) {
+  //     parentId = queue.shift();
+  //     const next = generator.next();
+  //
+  //     if (next.done) {
+  //       return;
+  //     }
+  //
+  //     const cell: BstCell = next.value;
+  //     const oldId = this.getCellIndex(cell);
+  //     this.removeCell(oldId);
+  //     this.setCell(cell, parentId);
+  //
+  //     if (this.getCell(oldId * 2 + 1)) {
+  //       queue.push(parentId * 2 + 1);
+  //     }
+  //     if (this.getCell(oldId * 2)) {
+  //       queue.push(parentId * 2);
+  //     }
+  //   }
+  // }
 
   findMax(sourceSubtreeRoot: BstCell): BstCell {
     let rightCell = sourceSubtreeRoot;
@@ -285,34 +289,14 @@ export class BinarySearchTree extends SimulationGraph {
     return rightCell;
   }
 
-  *bfTraversal(root: BstCell): Generator<BstCell> {
-    const queue: BstCell[] = [];
-    queue.push(root);
-
-    while (queue.length > 0) {
-      const cell = queue.shift();
-      const rightChild = this.getRightChild(cell);
-      const leftChild = this.getLeftChild(cell);
-
-      yield cell;
-
-      if (!!rightChild) {
-        queue.push(rightChild);
-      }
-      if (!!leftChild) {
-        queue.push(leftChild);
-      }
-    }
-  }
 
   async insert(node: SimulationNode): Promise<void> {
-    let checkingCell = this.data[0];
+    let checkingCell = this.getRoot();
 
     while (checkingCell) {
       let side = 0;
       if (!checkingCell.node) {
         node.setTarget(checkingCell.x + side, checkingCell.y - 100);
-        // * Math.floor(Math.log2(checkingCell.id))
         await new Promise(r => setTimeout(r, 600));
         await this.add(node, checkingCell);
         return;
@@ -340,29 +324,8 @@ export class BinarySearchTree extends SimulationGraph {
     }
   }
 
-  private checkEntry(cell: BstCell): boolean {
-    let parent = this.getParent(cell);
-    let child = cell;
-    while (!!parent) {
-      // if the left child
-      if (child.id % 2 === 0) {
-        if (cell.node.value > parent.node.value) {
-          return false;
-        }
-      } else {
-        if (cell.node.value < parent.node.value) {
-          return false;
-        }
-      }
-      child = parent;
-      parent = this.getParent(parent);
-    }
-
-    return true;
-  }
-
   async fix(): Promise<void> {
-    const invalidCell = this._data.find((c: BstCell | undefined) => !!c && !c.isValid);
+    const invalidCell = this.data.find((c: BstCell) => !!c && !c.isValid);
 
     invalidCell.removeNode();
     const leftChild = this.getLeftChild(invalidCell);
@@ -376,37 +339,98 @@ export class BinarySearchTree extends SimulationGraph {
     return;
   }
 
-  private getParent(cell: BstCell): BstCell {
-    return this.getData(Math.floor(cell.id / 2));
+  getData(): BstCell[] {
+    return this.data.filter(d => !!d);
   }
 
-  private getLeftChild(cell: BstCell): BstCell {
+  *bfTraversal(root: BstCell): Generator<BstCell> {
+    const queue: BstCell[] = [];
+    queue.push(root);
+
+    while (queue.length > 0) {
+      const cell = queue.shift();
+      const rightChild = this.getRightChild(cell);
+      const leftChild = this.getLeftChild(cell);
+
+      yield cell;
+
+      if (!!rightChild) {
+        queue.push(rightChild);
+      }
+      if (!!leftChild) {
+        queue.push(leftChild);
+      }
+    }
+  }
+
+  *upTree(cell: BstCell): Generator<[BstCell, BstCell]> {
+    let parent = this.getParent(cell);
+    let child = cell;
+    while (!!parent) {
+      yield [parent, child];
+      child = parent;
+      parent = this.getParent(parent);
+    }
+  }
+
+  protected checkEntry(cell: BstCell): boolean {
+    const upTreeGenerator = this.upTree(cell);
+    let iterator = upTreeGenerator.next();
+    if (iterator.done) {
+      return true;
+    }
+
+    while (!iterator.done) {
+      const [parent, child] = iterator.value;
+
+      const isLeftChild = this.children[parent.id][0] === child;
+      // if the left child
+      if (isLeftChild) {
+        if (cell.node.value > parent.node.value) {
+          return false;
+        }
+      } else {
+        if (cell.node.value < parent.node.value) {
+          return false;
+        }
+      }
+      iterator = upTreeGenerator.next();
+    }
+
+    return true;
+  }
+
+  protected getParent(cell: BstCell): BstCell {
     if (!cell) {
       return undefined;
     }
-    return this.getData(2 * cell.id);
+    return this.parents[cell.id];
   }
 
-  private getRightChild(cell: BstCell): BstCell {
+  protected getLeftChild(cell: BstCell): BstCell | undefined {
     if (!cell) {
       return undefined;
     }
-    return this.getData(2 * cell.id + 1);
+    const children = this.children[cell.id];
+    if (!children) {
+      return undefined;
+    }
+    return children[0];
   }
 
-  private setData(cell: BstCell): void {
-    this._data[cell.id - 1] = cell;
+  protected getRightChild(cell: BstCell): BstCell | undefined {
+    if (!cell) {
+      return undefined;
+    }
+    const children = this.children[cell.id];
+    if (!children) {
+      return undefined;
+    }
+    return children[1];
   }
 
-  private getData(index: number): BstCell {
-    return this._data[index - 1];
+  private getRoot(): BstCell {
+    return this.children[-1][0];
   }
 
-  private removeData(cell: BstCell): void {
-    delete this._data[cell.id - 1];
-  }
-
-  get data(): BstCell[] {
-    return this._data.filter((d: BstCell | undefined) => !!d);
-  }
 }

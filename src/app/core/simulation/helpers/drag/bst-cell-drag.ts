@@ -32,7 +32,7 @@ export class BstCellDrag implements DragHelper<BstCell> {
 
     d.fx = undefined;
     d.fy = undefined;
-    d.tree.moveCell(d, d3.event.x, d3.event.y);
+    d.graph.moveCell(d, d3.event.x, d3.event.y);
 
 
     d3.select(cells[i]).style('cursor', null);

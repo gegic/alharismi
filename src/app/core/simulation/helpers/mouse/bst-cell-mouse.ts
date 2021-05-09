@@ -22,7 +22,7 @@ export class BstCellMouse implements MouseHelper<BstCell> {
 
     const draggedNode = this.simulation.loop.draggedNode;
     const innerNode = d.node;
-    const treeValid = d.tree.isValid;
+    const treeValid = d.graph.isValid;
 
     let color: string;
 
@@ -66,7 +66,7 @@ export class BstCellMouse implements MouseHelper<BstCell> {
 
     const draggedNode = this.simulation.loop.draggedNode;
     const innerNode = d.node;
-    const treeValid = d.tree.isValid;
+    const treeValid = d.graph.isValid;
 
     if (!draggedNode || !!innerNode || !treeValid) {
       return;

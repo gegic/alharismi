@@ -40,8 +40,8 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
       .attr('pointer-events', 'none')
       .attr('font-size', 0)
       .raise()
-      .style('fill', d => d.tree.isValid ? 'black' : '#860000')
-      .text(d => d.tree.isValid ? 'empty' : 'invalid')
+      .style('fill', d => d.graph.isValid ? 'black' : '#860000')
+      .text(d => d.graph.isValid ? 'empty' : 'invalid')
       .transition()
       .duration(500)
       .attr('font-size', 16);
@@ -64,7 +64,7 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
 
     updateElement
       .select('.bst-cell-circle')
-      .attr('fill', d => d.tree.isValid ? '#E2E8CE' : '#e8cece');
+      .attr('fill', d => d.graph.isValid ? '#E2E8CE' : '#e8cece');
 
     updateElement
       .select('.bst-cell-name')
@@ -73,8 +73,8 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
 
     updateElement
       .select('.bst-cell-empty')
-      .style('fill', d => d.tree.isValid ? 'black' : '#860000')
-      .text(d => d.tree.isValid ? 'empty' : 'invalid');
+      .style('fill', d => d.graph.isValid ? 'black' : '#860000')
+      .text(d => d.graph.isValid ? 'empty' : 'invalid');
 
     return updateElement;
   }

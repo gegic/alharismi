@@ -1,6 +1,5 @@
 import {DrawableHandler} from './drawable-handler';
 import {SimulationNode} from '../basics/simulation-node';
-import {BinarySearchTree} from '../structures/tree/binary-search-tree/binary-search-tree';
 import * as d3 from 'd3';
 import {DragHelper} from '../helpers/drag/drag-helper';
 import {DrawingHelper} from '../helpers/drawing/drawing-helper';
@@ -13,11 +12,12 @@ import {BstCellDrag} from '../helpers/drag/bst-cell-drag';
 import {BstCellMouse} from '../helpers/mouse/bst-cell-mouse';
 import {LinkDrawingHelper} from '../helpers/drawing/link-drawing-helper';
 import {SimulationLink} from '../basics/simulation-link';
-export class BstHandler implements DrawableHandler<BinarySearchTree>{
+import {AvlTree} from '../structures/tree/avl-tree/avl-tree';
+export class AvlTreeHandler implements DrawableHandler<AvlTree>{
 
-  dragHelper: DragHelper<BinarySearchTree>;
-  drawingHelper: DrawingHelper<BinarySearchTree>;
-  mouseHelper: MouseHelper<BinarySearchTree>;
+  dragHelper: DragHelper<AvlTree>;
+  drawingHelper: DrawingHelper<AvlTree>;
+  mouseHelper: MouseHelper<AvlTree>;
   simulation: Simulation;
 
   bstCellDrawingHelper: DrawingHelper<BstCell>;
@@ -25,14 +25,14 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
   bstCellMouseHelper: MouseHelper<BstCell>;
 
   linkDrawingHelper: DrawingHelper<SimulationLink>;
-  data: BinarySearchTree[] = [];
+  data: AvlTree[] = [];
   maxId = 0;
   canvas: d3.Selection<any, any, any, any>;
 
   constructor(simulation: Simulation,
-              dragHelper: DragHelper<BinarySearchTree>,
-              drawingHelper: DrawingHelper<BinarySearchTree>,
-              mouseHelper: MouseHelper<BinarySearchTree>,
+              dragHelper: DragHelper<AvlTree>,
+              drawingHelper: DrawingHelper<AvlTree>,
+              mouseHelper: MouseHelper<AvlTree>,
               bstCellDrawingHelper: DrawingHelper<BstCell>,
               bstCellDragHelper: DragHelper<BstCell>,
               bstCellMouseHelper: MouseHelper<BstCell>,
@@ -49,19 +49,19 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
     this.canvas = canvas;
   }
 
-  add(tree: BinarySearchTree): void {
+  add(tree: AvlTree): void {
     this.data.push(tree);
   }
 
-  create(value: number, posX: number, posY: number): BinarySearchTree {
-    return new BinarySearchTree(this.maxId++, posX, posY);
+  create(value: number, posX: number, posY: number): AvlTree {
+    return new AvlTree(this.maxId++, posX, posY);
   }
 
   draw(): void {
 
     const treeElements = this.canvas
       .selectAll('.bst')
-      .data(this.data, (tree: BinarySearchTree) => tree.id)
+      .data(this.data, (tree: AvlTree) => tree.id)
       .join(enterElement => this.enter(enterElement),
         updateElement => this.update(updateElement),
         exitElement => this.exit(exitElement));
@@ -70,12 +70,12 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
   }
 
 
-  enter(enterElement: d3.Selection<d3.EnterElement, BinarySearchTree, any, any>): d3.Selection<d3.BaseType, BinarySearchTree, any, any> {
+  enter(enterElement: d3.Selection<d3.EnterElement, AvlTree, any, any>): d3.Selection<d3.BaseType, AvlTree, any, any> {
     const treeElement = this.drawingHelper.enter(enterElement);
     this.mouseHelper.addMouseInteraction(treeElement);
     treeElement
       .selectAll('.bst-cell')
-      .data((d: BinarySearchTree) => d.getData(), (cell: BstCell) => cell.id)
+      .data((d: AvlTree) => d.getData(), (cell: BstCell) => cell.id)
       .join(enterCell => {
         const cellElement = this.bstCellDrawingHelper.enter(enterCell);
         this.bstCellDragHelper.addDragInteraction(cellElement);
@@ -85,7 +85,7 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
 
     treeElement
       .selectAll('.link')
-      .data((d: BinarySearchTree) => d.getLinks(), (link: SimulationLink) => `${link.target.id}_${link.target.id}`)
+      .data((d: AvlTree) => d.getLinks(), (link: SimulationLink) => `${link.target.id}_${link.target.id}`)
       .join(enterLink => {
         const linkElement = this.linkDrawingHelper.enter(enterLink);
         linkElement.lower();
@@ -94,11 +94,11 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
     return treeElement;
   }
 
-  update(updateElement: d3.Selection<d3.BaseType, BinarySearchTree, any, any>): d3.Selection<d3.BaseType, BinarySearchTree, any, any> {
+  update(updateElement: d3.Selection<d3.BaseType, AvlTree, any, any>): d3.Selection<d3.BaseType, AvlTree, any, any> {
     this.drawingHelper.update(updateElement);
     updateElement
       .selectAll('.bst-cell')
-      .data((d: BinarySearchTree) => d.getData(), (cell: BstCell) => cell.id)
+      .data((d: AvlTree) => d.getData(), (cell: BstCell) => cell.id)
       .join(enterCell => {
           const cellElement = this.bstCellDrawingHelper.enter(enterCell);
           this.bstCellDragHelper.addDragInteraction(cellElement);
@@ -110,7 +110,7 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
 
     updateElement
       .selectAll('.link')
-      .data((d: BinarySearchTree) => d.getLinks(), (link: SimulationLink) => `${link.target.id}_${link.target.id}`)
+      .data((d: AvlTree) => d.getLinks(), (link: SimulationLink) => `${link.target.id}_${link.target.id}`)
       .join(enterLink => {
         const linkElement = this.linkDrawingHelper.enter(enterLink);
         linkElement.lower();
@@ -121,7 +121,7 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
     return updateElement;
   }
 
-  exit(exitElement: d3.Selection<d3.BaseType, BinarySearchTree, any, any>): d3.Selection<d3.BaseType, BinarySearchTree, any, any> {
+  exit(exitElement: d3.Selection<d3.BaseType, AvlTree, any, any>): d3.Selection<d3.BaseType, AvlTree, any, any> {
     return this.drawingHelper.exit(exitElement);
   }
 

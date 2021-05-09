@@ -22,7 +22,7 @@ export class BstMouse implements MouseHelper<BinarySearchTree> {
       {
         title: 'Change name',
         action: async (elm: BinarySearchTree) => {
-          elm.data[0].descriptor = prompt('New name');
+          elm.getData()[0].descriptor = prompt('New name');
         }
       },
       {

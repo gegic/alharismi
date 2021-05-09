@@ -97,9 +97,9 @@ export class NodeDrag implements DragHelper<SimulationNode> {
 
       if (bstCell &&
         !bstCell.node &&
-        bstCell.tree.isValid &&
-        (!d.lockedPlaceholder || bstCell.tree !== d.lockedPlaceholder.tree)) {
-        bstCell.tree.add(d, bstCell);
+        bstCell.graph.isValid &&
+        (!d.lockedPlaceholder || bstCell.graph !== d.lockedPlaceholder.graph)) {
+        bstCell.graph.add(d, bstCell);
       }
     }
     d.setTarget(d3.event.x, d3.event.y);
@@ -134,7 +134,7 @@ export class NodeDrag implements DragHelper<SimulationNode> {
       d.noCollision = true;
       d.pointerEvents = true;
       d.nodeOrder = 2;
-      d.move(d.lockedGrid.parent.x + d.lockedGrid.x + d.lockedGrid.width / 2, d.lockedGrid.height / 2 + d.lockedGrid.parent.y)
+      d.move(d.lockedGrid.parent.x + d.lockedGrid.x + d.lockedGrid.width / 2, d.lockedGrid.height / 2 + d.lockedGrid.parent.y);
     } else if (d.lockedPlaceholder) {
       d.noCollision = true;
       d.pointerEvents = false;

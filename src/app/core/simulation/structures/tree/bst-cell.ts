@@ -4,6 +4,7 @@ import {SimulationArray} from '../array/simulation-array';
 import {BinarySearchTree} from './binary-search-tree/binary-search-tree';
 import {Binary} from '@angular/compiler';
 import {SimulationLink} from '../../basics/simulation-link';
+import {SimulationGraph} from './simulation-graph';
 
 export class BstCell implements SimulationNodeDatum {
   radius = 50;
@@ -28,10 +29,10 @@ export class BstCell implements SimulationNodeDatum {
 
   node?: SimulationNode;
   hoveringNode?: SimulationNode;
-  tree: BinarySearchTree;
+  graph: SimulationGraph;
 
-  constructor(tree: BinarySearchTree, id: number, x: number, y: number, descriptor?: string) {
-    this.tree = tree;
+  constructor(tree: SimulationGraph, id: number, x: number, y: number, descriptor?: string) {
+    this.graph = tree;
     this.cx = x;
     this.cy = y;
     this.x = x;
