@@ -14,13 +14,17 @@ import {ArrayCellDrawing} from './helpers/drawing/array-cell-drawing';
 import {ArrayDrag} from './helpers/drag/array-drag';
 import {ArrayCellMouse} from './helpers/mouse/array-cell-mouse';
 import {ArrayMouse} from './helpers/mouse/array-mouse';
-import {BstHandler} from './handlers/bst-handler';
+import {BinaryTreeHandler} from './handlers/binary-tree-handler';
 import {BstDrawing} from './helpers/drawing/bst-drawing';
 import {BstCellDrawing} from './helpers/drawing/bst-cell-drawing';
 import {BstCellDrag} from './helpers/drag/bst-cell-drag';
 import {BstCellMouse} from './helpers/mouse/bst-cell-mouse';
 import {LinkDrawingHelper} from './helpers/drawing/link-drawing-helper';
 import {BstMouse} from './helpers/mouse/bst-mouse';
+import {BinarySearchTree} from './structures/tree/binary-search-tree/binary-search-tree';
+import {SimulationNode} from './basics/simulation-node';
+import {SimulationArray} from './structures/array/simulation-array';
+import {AvlTree} from './structures/tree/avl-tree/avl-tree';
 
 export class Simulation {
 
@@ -30,7 +34,7 @@ export class Simulation {
 
   nodeHandler?: NodeHandler;
   arrayHandler?: ArrayHandler;
-  bstHandler?: BstHandler;
+  bstHandler?: BinaryTreeHandler;
 
   camera?: Camera;
 
@@ -74,7 +78,7 @@ export class Simulation {
       this.canvas
     );
 
-    this.bstHandler = new BstHandler(
+    this.bstHandler = new BinaryTreeHandler(
       this,
       null,
       new BstDrawing(),
@@ -91,20 +95,15 @@ export class Simulation {
 
   async get_level(): Promise<void> {
     const nodes = this.nodeHandler.generateNodes(11, null);
-    const anotherNode = this.nodeHandler.create(25, 0, 0);
+    const anotherNode = new SimulationNode(25, -1, 0, 0);
     this.nodeHandler.add(nodes);
     this.nodeHandler.add(anotherNode);
-    const arr = this.arrayHandler.create(10, 0, 0);
+    const arr = new SimulationArray(-1, 10, 0, 0);
     this.arrayHandler.add(arr);
-    //
-    // console.log(arr);
 
-    const bst = this.bstHandler.create(0, 0, 0);
+    const bst = new AvlTree(-1, 0, 0);
     this.bstHandler.add(bst);
 
-    for (const n of nodes.slice(0, 3)) {
-     await arr.insertAt(n, 0);
-    }
 
   }
 }

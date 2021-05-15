@@ -44,11 +44,8 @@ export class ArrayHandler implements DrawableHandler<SimulationArray> {
     this.canvas = canvas;
   }
 
-  create(size: number, xPos: number, yPos: number, descriptor?: string): SimulationArray {
-    return new SimulationArray(this.maxId++, size, xPos, yPos, descriptor);
-  }
-
   add(array: SimulationArray): void {
+    array.id = this.maxId++;
     this.data.push(array);
   }
 

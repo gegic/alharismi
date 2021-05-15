@@ -44,23 +44,21 @@ export class NodeHandler implements DrawableHandler<SimulationNode> {
     this.colorProvider = colorProvider;
   }
 
-  create(value: number, xPos: number, yPos: number): SimulationNode {
-    return new SimulationNode(value, this.maxId++, xPos, yPos);
-  }
-
   add(obj: undefined | SimulationNode | SimulationNode[]): SimulationNode | SimulationNode[] {
     let values: number[];
     if (Array.isArray(obj)) {
       values = obj.map(sn => sn.value);
       obj.forEach(d => {
+        d.id = this.maxId++;
         this.data.push(d);
         // this.simulation.loop.nodes.push(d);
       });
     } else {
       if (!obj) {
-        obj = this.create(this.generateRandomValue(), 0, 0);
+        obj = new SimulationNode(this.generateRandomValue(), -1, 0, 0);
       }
       values = [obj.value];
+      obj.id = this.maxId++;
       this.data.push(obj);
       // this.simulation.loop.nodes.push(obj);
     }
@@ -136,7 +134,7 @@ export class NodeHandler implements DrawableHandler<SimulationNode> {
         continue;
       }
       // const pos = this.positionHelper.createRandomPointOnCircumference([0, 0], 1);
-      const node = this.create(rand, 0, 0);
+      const node = new SimulationNode(rand, this.maxId++, 0, 0);
       nodes.push(node);
     }
     nodes.forEach(c => {

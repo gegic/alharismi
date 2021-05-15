@@ -53,7 +53,7 @@ export class BstMouse implements MouseHelper<BinarySearchTree> {
             alert('Value invalid');
             return;
           }
-          const node = this.simulation.nodeHandler.create(newValue, bst.x, bst.y - 150);
+          const node = new SimulationNode(newValue, -1, bst.x, bst.y - 150);
           this.simulation.nodeHandler.add(node);
           await bst.insert(node);
         }
@@ -69,6 +69,12 @@ export class BstMouse implements MouseHelper<BinarySearchTree> {
           }
 
           await bst.delete(deleteValue);
+        }
+      },
+      {
+        title: 'Info log',
+        action: async (elm: BinarySearchTree) => {
+          console.log(elm);
         }
       }
     ];

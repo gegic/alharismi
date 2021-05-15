@@ -117,7 +117,7 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
             alert('Value invalid');
             return;
           }
-          const node = this.simulation.nodeHandler.create(newValue, arr.x, arr.y - 200);
+          const node = new SimulationNode(newValue, -1, arr.x, arr.y - 200);
           this.simulation.nodeHandler.add(node);
           await arr.insertAt(node, index);
         }

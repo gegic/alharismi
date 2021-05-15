@@ -47,7 +47,6 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
       .attr('font-size', 16);
 
     bstCell
-      .filter(d => !!d.descriptor)
       .append('text')
       .style('fill', 'white')
       .attr('class', 'bst-cell-name')
@@ -56,7 +55,8 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
       .style('text-anchor', 'middle')
       .attr('pointer-events', 'none')
       .attr('font-size', 32)
-      .text(d => d.descriptor);
+      .style('opacity', d => !d.descriptor ? 0 : 1)
+      .text(d => !d.descriptor ? '' : d.descriptor);
     return bstCell;
   }
 
@@ -68,8 +68,8 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
 
     updateElement
       .select('.bst-cell-name')
-      .filter(d => !!d.descriptor)
-      .text(d => d.descriptor);
+      .style('opacity', d => !d.descriptor ? 0 : 1)
+      .text(d => !d.descriptor ? '' : d.descriptor);
 
     updateElement
       .select('.bst-cell-empty')

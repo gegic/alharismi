@@ -14,6 +14,5 @@ export interface DrawableHandler<SimulationObject> {
 
   canvas: Selection<any, any, any, any>;
 
-  create(value: number, posX: number, posY: number): SimulationObject;
   draw(): void;
 }

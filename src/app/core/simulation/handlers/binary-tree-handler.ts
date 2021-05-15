@@ -13,7 +13,8 @@ import {BstCellDrag} from '../helpers/drag/bst-cell-drag';
 import {BstCellMouse} from '../helpers/mouse/bst-cell-mouse';
 import {LinkDrawingHelper} from '../helpers/drawing/link-drawing-helper';
 import {SimulationLink} from '../basics/simulation-link';
-export class BstHandler implements DrawableHandler<BinarySearchTree>{
+
+export class BinaryTreeHandler implements DrawableHandler<BinarySearchTree>{
 
   dragHelper: DragHelper<BinarySearchTree>;
   drawingHelper: DrawingHelper<BinarySearchTree>;
@@ -50,11 +51,9 @@ export class BstHandler implements DrawableHandler<BinarySearchTree>{
   }
 
   add(tree: BinarySearchTree): void {
+    tree.id = this.maxId++;
+    tree.setRoot();
     this.data.push(tree);
-  }
-
-  create(value: number, posX: number, posY: number): BinarySearchTree {
-    return new BinarySearchTree(this.maxId++, posX, posY);
   }
 
   draw(): void {

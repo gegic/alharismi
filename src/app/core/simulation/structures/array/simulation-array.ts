@@ -1,8 +1,9 @@
 import {Selection} from 'd3-selection';
 import {SimulationNode} from '../../basics/simulation-node';
 import {ArrayCell} from './array-cell';
+import {SimulationNodeDatum} from 'd3-force';
 
-export class SimulationArray {
+export class SimulationArray implements SimulationNodeDatum{
 
   cellWidth = 100;
   cellHeight = 100;
