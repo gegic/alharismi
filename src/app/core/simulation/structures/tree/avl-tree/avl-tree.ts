@@ -18,6 +18,14 @@ export class AvlTree extends BinarySearchTree {
     this.checkBalance(bstCell);
   }
 
+  async delete(value: number): Promise<[SimulationNode, BstCell | null]> {
+    const [node, cell] = await super.delete(value);
+
+    this.checkBalance(cell);
+    return [node, cell];
+  }
+
+
   /**
    * Updates the heights of the starting cell and all of its ancestors and checks if all nodes are balanced.
    * If an unbalanced node shows up, performs operations of balancing.
@@ -40,7 +48,11 @@ export class AvlTree extends BinarySearchTree {
         iterator = upTreeGenerator.next();
         continue;
       }
-
+      if (!currentCell.node) {
+        delete this.heights[currentCell.id];
+        iterator = upTreeGenerator.next();
+        continue;
+      }
       const leftChild = this.getLeftChild(currentCell);
       const rightChild = this.getRightChild(currentCell);
       const leftHeight = this.getHeight(leftChild);
@@ -78,29 +90,6 @@ export class AvlTree extends BinarySearchTree {
           this.leftRotation(currentCell);
         }
       }
-      // RR case
-      // if (!!rightChild && !!rightChild.node &&
-      //   balance < -1 && currentValue > rightChild.node.value) {
-      //   this.leftRotation(currentCell);
-      // }
-      // // LL case
-      // if (!!leftChild && !!leftChild.node &&
-      //   balance > 1 && currentValue < leftChild.node.value) {
-      //   this.rightRotation(currentCell);
-      // }
-      // // LR case
-      // if (!!leftChild && !!leftChild.node &&
-      //   balance > 1 && currentValue > leftChild.node.value) {
-      //   node.left = leftRotate(node.left);
-      //   return rightRotate(node);
-      // }
-      //
-      // // RL case
-      // if (!!rightChild && !!rightChild.node &&
-      //   balance < -1 && currentValue < rightChild.node.value) {
-      //   node.right = rightRotate(node.right);
-      //   return leftRotate(node);
-      // }
 
       iterator = upTreeGenerator.next();
     }
