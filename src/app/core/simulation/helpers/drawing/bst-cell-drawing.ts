@@ -64,7 +64,7 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
 
     updateElement
       .select('.bst-cell-circle')
-      .attr('fill', d => d.graph.isValid ? '#E2E8CE' : '#e8cece');
+      .attr('fill', d => !d.graph.isValid ? '#e8cece' : d.color);
 
     updateElement
       .select('.bst-cell-name')

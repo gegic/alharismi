@@ -5,58 +5,13 @@ import {SimulationGraph} from '../simulation-graph';
 import {BstCell} from '../bst-cell';
 import {BstCellMouse} from '../../../helpers/mouse/bst-cell-mouse';
 import {BstCellDrag} from '../../../helpers/drag/bst-cell-drag';
+import {BstCellDrawing} from '../../../helpers/drawing/bst-cell-drawing';
+import {BinaryTree} from '../binary-tree/binary-tree';
 
-export class BinarySearchTree extends SimulationGraph {
-
-  treeHierarchy?: d3.HierarchyNode<BstCell>;
-  children: { [id: number]: [BstCell | undefined, BstCell | undefined] } = {};
-  parents: { [id: number]: [BstCell, number] } = {};
+export class BinarySearchTree extends BinaryTree {
 
   constructor(id: number, x: number, y: number) {
-    super();
-    this.id = id;
-    this.x = x;
-    this.y = y;
-  }
-
-  setRoot(): void {
-    const root = new BstCell(this, this.maxId++, this.x, this.y);
-    root.isRoot = true;
-    root.descriptor = `bst_${this.id}`;
-    this.addCell(root, null);
-  }
-
-  addCell(cell: BstCell, parent: BstCell | null, left = true): void {
-    this.data.push(cell);
-    // this.setLeftChild(parent, cell)
-    if (left) {
-      this.setLeftChild(parent, cell);
-    } else {
-      this.setRightChild(parent, cell);
-    }
-  }
-
-  deleteCell(cell: BstCell): void {
-    this.links = this.links.filter((sl: SimulationLink) => sl.target !== cell && sl.source !== cell);
-    this.data = this.data.filter(c => c !== cell);
-    this.detachChildren(cell);
-    this.detachParent(cell);
-  }
-
-  async add(d: SimulationNode, bstCell: BstCell): Promise<void> {
-
-    bstCell.setNode(d);
-    d.lockedPlaceholder = bstCell;
-
-    this.addChildCells(bstCell);
-    this.alignForces();
-
-    const isValid = this.checkEntry(bstCell);
-
-    if (!isValid) {
-      this.isValid = false;
-      bstCell.isValid = false;
-    }
+    super(id, x, y);
   }
 
   addChildCells(cell: BstCell): void {
@@ -72,49 +27,19 @@ export class BinarySearchTree extends SimulationGraph {
     );
   }
 
-  setPosition(x: number, y: number): void {
-    this.x = x;
-    this.y = y;
+  async add(d: SimulationNode, bstCell: BstCell): Promise<void> {
 
+    bstCell.setNode(d);
+    d.lockedPlaceholder = bstCell;
+
+    this.addChildCells(bstCell);
     this.alignForces();
-  }
 
-  alignForces(): void {
-    this.treeHierarchy = d3
-      .hierarchy(this.getRoot(), (d: BstCell) => {
-        const children: BstCell[] = [];
-        const leftChild = this.getLeftChild(d);
-        const rightChild = this.getRightChild(d);
-        if (!!leftChild) {
-          children.push(leftChild);
-        }
-        if (!!rightChild) {
-          children.push(rightChild);
-        }
+    const isValid = this.checkEntry(bstCell);
 
-        return children;
-      });
-
-    const treeMap = d3.tree()
-      .nodeSize([200, 200]);
-
-    treeMap(this.treeHierarchy)
-      .descendants().forEach((d: d3.HierarchyPointNode<BstCell>) => {
-        d.x += this.x;
-        d.y += this.y;
-
-        d.data.graphMoved(d.x, d.y);
-      });
-  }
-
-  moveCell(cell: BstCell, xPos: number, yPos: number): void {
-    if (cell.isRoot) {
-      this.setPosition(xPos, yPos);
-      return;
-    }
-    else {
-      cell.setTarget(cell.graphX, cell.graphY);
-      return;
+    if (!isValid) {
+      this.isValid = false;
+      bstCell.isValid = false;
     }
   }
 
@@ -153,11 +78,12 @@ export class BinarySearchTree extends SimulationGraph {
   /**
    * Finds and deletes a node with the passed value.
    * @param value - Value used to find a node and then delete it.
-   * @return nodeCellPromise - A promise of an array consisting of simulation node, and
-   * a cell that was the first one affected by the occurred deletion.
+   * @return nodeCellPromise - A promise of an array consisting of simulation node,
+   * a cell that was the first one affected by the occurred deletion, and a cell from
+   * which the node was deleted.
    * The cell is null if the deleted node didn't have a parent, i.e. it was the root.
    */
-  async delete(value: number): Promise<[SimulationNode, BstCell | null]> {
+  async delete(value: number): Promise<[SimulationNode, BstCell | null, BstCell]> {
     const found = await this.find(value);
     if (!found) {
       return null;
@@ -174,17 +100,32 @@ export class BinarySearchTree extends SimulationGraph {
     }
   }
 
-  async deleteLeaf(target: BstCell, leftChild: BstCell, rightChild: BstCell): Promise<[SimulationNode, BstCell | null]> {
+  /**
+   * Deletes a node which doesn't have any children besides empty cells (which are mandatory).
+   * @param target - The cell being deleted.
+   * @param leftChild - Left child of the cell being deleted.
+   * @param rightChild - Right child of the cell being deleted.
+   * @returns promise - A promise of the node which was deleted,
+   * and the exact cell from which the node was deleted (twice for uniformity).
+   */
+  async deleteLeaf(target: BstCell, leftChild: BstCell, rightChild: BstCell): Promise<[SimulationNode, BstCell | null, BstCell]> {
     this.deleteCell(leftChild);
     this.deleteCell(rightChild);
 
     this.alignForces();
 
-    const parent = this.getParent(target)[0];
-    return [target.removeNode(), target];
+    return [target.removeNode(), target, target];
   }
 
-  async deleteOnlyChild(target: BstCell, leftChild: BstCell, rightChild: BstCell): Promise<[SimulationNode, BstCell | null]> {
+  /**
+   * Deletes a node which which has one child cell that contains a node and one that does not.
+   * @param target - The cell being deleted.
+   * @param leftChild - Left child of the cell being deleted.
+   * @param rightChild - Right child of the cell being deleted.
+   * @returns promise - A promise of the node which was deleted and the cell which replaces 'target'
+   * (i.e. this cell was target's child and now is a child of the same cell the target was).
+   */
+  async deleteOnlyChild(target: BstCell, leftChild: BstCell, rightChild: BstCell): Promise<[SimulationNode, BstCell | null, BstCell]> {
     const parent = this.getParent(target)[0];
     const takenCell = !!leftChild.node ? leftChild : rightChild;
     const freeCell = !leftChild.node ? leftChild : rightChild;
@@ -214,11 +155,20 @@ export class BinarySearchTree extends SimulationGraph {
     }
     this.alignForces();
 
-    console.log(this.data);
-    return [node, takenCell];
+    return [node, takenCell, target];
   }
 
-  async deleteTwoChildren(target: BstCell, leftChild: BstCell): Promise<[SimulationNode, BstCell | null]> {
+  /**
+   * Deletes the node whose both children contain nodes.
+   * @param target - The cell being deleted.
+   * @param leftChild - Left child of the cell being deleted.
+   * @return nodeCellPromise - A promise of an array consisting of simulation node,
+   * the cell that was the first one affected by the occurred deletion, and the cell
+   * from which the node was deleted.
+   *
+   * The affected cell is null if the deleted node didn't have a parent, i.e. it was the root.
+   */
+  async deleteTwoChildren(target: BstCell, leftChild: BstCell): Promise<[SimulationNode, BstCell | null, BstCell]> {
     const substituteCell = this.findMax(leftChild);
     const substituteNode = substituteCell.removeNode();
 
@@ -234,14 +184,14 @@ export class BinarySearchTree extends SimulationGraph {
     const substituteLeft = this.getLeftChild(substituteCell);
     const substituteRight = this.getRightChild(substituteCell);
 
-    let startingCell: BstCell | null = null;
+    let deleted: [SimulationNode, BstCell | null, BstCell];
     if (!substituteLeft.node && !substituteRight.node) {
-      startingCell = (await this.deleteLeaf(substituteCell, substituteLeft, substituteRight))[1];
+      deleted = (await this.deleteLeaf(substituteCell, substituteLeft, substituteRight));
     } else if (!substituteLeft.node || !substituteRight.node) {
-      startingCell = (await this.deleteOnlyChild(substituteCell, substituteLeft, substituteRight))[1];
+      deleted = (await this.deleteOnlyChild(substituteCell, substituteLeft, substituteRight));
     }
 
-    return [node, startingCell];
+    return [node, deleted[1], deleted[2]];
   }
 
   findMax(sourceSubtreeRoot: BstCell): BstCell {
@@ -290,64 +240,6 @@ export class BinarySearchTree extends SimulationGraph {
     }
   }
 
-  async fix(): Promise<void> {
-    const invalidCell = this.data.find((c: BstCell) => !!c && !c.isValid);
-
-    invalidCell.removeNode();
-    const leftChild = this.getLeftChild(invalidCell);
-    const rightChild = this.getRightChild(invalidCell);
-
-    this.deleteCell(leftChild);
-    this.deleteCell(rightChild);
-
-    this.isValid = true;
-
-    return;
-  }
-
-  getData(): BstCell[] {
-    return this.data.filter(d => !!d);
-  }
-
-  /**
-   * Generator which traverses the tree in a breadth-first manner.
-   * @param root
-   */
-  *bfTraversal(root: BstCell): Generator<BstCell> {
-    const queue: BstCell[] = [];
-    queue.push(root);
-
-    while (queue.length > 0) {
-      const cell = queue.shift();
-      const rightChild = this.getRightChild(cell);
-      const leftChild = this.getLeftChild(cell);
-
-      yield cell;
-
-      if (!!rightChild) {
-        queue.push(rightChild);
-      }
-      if (!!leftChild) {
-        queue.push(leftChild);
-      }
-    }
-  }
-
-  /**
-   * Reaches root by traversing a tree from the starting cell upwards.
-   * @param cell - The starting cell.
-   * @yields [currentCell, parent] - The cell that generator is currently checking and its parent.
-   */
-  *upTree(cell: BstCell): Generator<[BstCell, BstCell]> {
-    let parent = this.getParent(cell)[0];
-    let currentCell = cell;
-    while (!!currentCell) {
-      yield [currentCell, parent];
-      currentCell = parent;
-      parent = this.getParent(parent)[0];
-    }
-  }
-
   protected checkEntry(cell: BstCell): boolean {
     const upTreeGenerator = this.upTree(cell);
     let iterator = upTreeGenerator.next();
@@ -356,13 +248,13 @@ export class BinarySearchTree extends SimulationGraph {
     }
 
     while (!iterator.done) {
-      const [child, parent] = iterator.value;
+      const [, parent, childIndex] = iterator.value;
 
       if (!parent) {
         return true;
       }
 
-      const isLeftChild = this.children[parent.id][0] === child;
+      const isLeftChild = childIndex === 0;
       // if the left child
       if (isLeftChild) {
         if (cell.node.value > parent.node.value) {
@@ -377,116 +269,5 @@ export class BinarySearchTree extends SimulationGraph {
     }
 
     return true;
-  }
-
-  /**
-   * Returns the parent of the passed cell,
-   * or undefined if this cell didn't have any parents.
-   * @param cell
-   * @protected
-   */
-  protected getParent(cell: BstCell): [BstCell, number] | [undefined, undefined] {
-    if (!cell) {
-      return [undefined, undefined];
-    }
-    return this.parents[cell.id];
-  }
-
-  protected getLeftChild(cell: BstCell): BstCell | undefined {
-    if (!cell) {
-      return undefined;
-    }
-    const children = this.children[cell.id];
-    if (!children) {
-      return undefined;
-    }
-    return children[0];
-  }
-
-  /**
-   * Sets the child cell as the left child of the parent cell.
-   * @param parent
-   * @param child
-   * @protected
-   */
-  protected setLeftChild(parent: BstCell, child: BstCell): void {
-    this.detachParent(child);
-
-    const parentId = !!parent ? parent.id : -1;
-    if (!this.children[parentId]) {
-      this.children[parentId] = [undefined, undefined];
-    }
-    this.children[parentId][0] = child;
-    this.parents[child.id] = [parent, 0];
-  }
-
-  protected getRightChild(cell: BstCell): BstCell | undefined {
-    if (!cell) {
-      return undefined;
-    }
-    const children = this.children[cell.id];
-    if (!children) {
-      return undefined;
-    }
-    return children[1];
-  }
-
-  /**
-   * Sets the child cell as the right child of the parent cell.
-   * @param parent
-   * @param child
-   * @protected
-   */
-  protected setRightChild(parent: BstCell, child: BstCell): void {
-    this.detachParent(child);
-
-    const parentId = !!parent ? parent.id : -1;
-    if (!this.children[parentId]) {
-      this.children[parentId] = [undefined, undefined];
-    }
-    this.children[parentId][1] = child;
-    this.parents[child.id] = [parent, 1];
-  }
-
-  /**
-   * Detaches cell from its children.
-   * @param cell
-   * @protected
-   */
-  protected detachChildren(cell: BstCell): void {
-    if (!this.children[cell.id]) {
-      return;
-    }
-    for (const cellsChild of this.children[cell.id]) {
-      if (!cellsChild) {
-        continue;
-      }
-      if (this.parents[cellsChild.id][0] === cell) {
-        delete this.parents[cellsChild.id];
-      }
-    }
-    delete this.children[cell.id];
-  }
-
-  /**
-   * Detaches cell from its parent.
-   * @param cell
-   * @protected
-   */
-  protected detachParent(cell: BstCell): void {
-
-    if (!this.parents[cell.id]) {
-      return;
-    }
-    const [parent, childIndex] = this.parents[cell.id];
-    const parentId = !!parent ? parent.id : -1;
-    if (this.children[parentId][childIndex] === cell) {
-      this.children[parentId][childIndex] = undefined;
-    }
-    delete this.parents[cell.id];
-  }
-
-  private getRoot(): BstCell {
-    return this.children[-1][0];
   }
 }

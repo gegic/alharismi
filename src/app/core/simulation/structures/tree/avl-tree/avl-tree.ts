@@ -4,6 +4,7 @@ import {BinarySearchTree} from '../binary-search-tree/binary-search-tree';
 import {BstCellDrag} from '../../../helpers/drag/bst-cell-drag';
 import {SimulationLink} from '../../../basics/simulation-link';
 import {root} from 'rxjs/internal-compatibility';
+import {BstCellDrawing} from '../../../helpers/drawing/bst-cell-drawing';
 
 export class AvlTree extends BinarySearchTree {
 
@@ -18,11 +19,11 @@ export class AvlTree extends BinarySearchTree {
     this.checkBalance(bstCell);
   }
 
-  async delete(value: number): Promise<[SimulationNode, BstCell | null]> {
-    const [node, cell] = await super.delete(value);
+  async delete(value: number): Promise<[SimulationNode, BstCell | null, BstCell]> {
+    const [node, affectedCell, deletedCell] = await super.delete(value);
 
-    this.checkBalance(cell);
-    return [node, cell];
+    this.checkBalance(affectedCell);
+    return [node, affectedCell, deletedCell];
   }
 
 

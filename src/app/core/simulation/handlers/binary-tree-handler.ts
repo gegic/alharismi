@@ -14,7 +14,7 @@ import {BstCellMouse} from '../helpers/mouse/bst-cell-mouse';
 import {LinkDrawingHelper} from '../helpers/drawing/link-drawing-helper';
 import {SimulationLink} from '../basics/simulation-link';
 
-export class BinaryTreeHandler implements DrawableHandler<BinarySearchTree>{
+export class BinaryTreeHandler implements DrawableHandler<BinarySearchTree> {
 
   dragHelper: DragHelper<BinarySearchTree>;
   drawingHelper: DrawingHelper<BinarySearchTree>;

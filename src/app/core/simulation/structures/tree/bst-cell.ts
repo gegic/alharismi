@@ -9,6 +9,7 @@ import {SimulationGraph} from './simulation-graph';
 export class BstCell implements SimulationNodeDatum {
   radius = 50;
 
+  color = '#E2E8CE';
   descriptor?: string;
   isRoot = false;
   noCollision = false;

@@ -25,6 +25,7 @@ import {BinarySearchTree} from './structures/tree/binary-search-tree/binary-sear
 import {SimulationNode} from './basics/simulation-node';
 import {SimulationArray} from './structures/array/simulation-array';
 import {AvlTree} from './structures/tree/avl-tree/avl-tree';
+import {RedBlackTree} from './structures/tree/red-black-tree/red-black-tree';
 
 export class Simulation {
 
@@ -101,7 +102,7 @@ export class Simulation {
     const arr = new SimulationArray(-1, 10, 0, 0);
     this.arrayHandler.add(arr);
 
-    const bst = new AvlTree(-1, 0, 0);
+    const bst = new RedBlackTree(-1, 0, 0);
     this.bstHandler.add(bst);
   }
 }
