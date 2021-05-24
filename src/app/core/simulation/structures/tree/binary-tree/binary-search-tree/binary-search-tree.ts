@@ -1,18 +1,43 @@
-import {SimulationNode} from '../../../basics/simulation-node';
+import {SimulationNode} from '../../../../basics/simulation-node';
 import * as d3 from 'd3';
-import {SimulationLink} from '../../../basics/simulation-link';
-import {SimulationGraph} from '../simulation-graph';
-import {BstCell} from '../bst-cell';
-import {BstCellMouse} from '../../../helpers/mouse/bst-cell-mouse';
-import {BstCellDrag} from '../../../helpers/drag/bst-cell-drag';
-import {BstCellDrawing} from '../../../helpers/drawing/bst-cell-drawing';
-import {BinaryTree} from '../binary-tree/binary-tree';
+import {SimulationLink} from '../../../../basics/simulation-link';
+import {SimulationGraph} from '../../simulation-graph';
+import {BstCell} from '../../bst-cell';
+import {BstCellMouse} from '../../../../helpers/mouse/bst-cell-mouse';
+import {BstCellDrag} from '../../../../helpers/drag/bst-cell-drag';
+import {BstCellDrawing} from '../../../../helpers/drawing/bst-cell-drawing';
+import {BinaryTree} from '../binary-tree';
 
 export class BinarySearchTree extends BinaryTree {
+
+  children: { [id: number]: [BstCell | undefined, BstCell | undefined] } = {};
+  parents: { [id: number]: [BstCell, number] } = {};
 
   constructor(id: number, x: number, y: number) {
     super(id, x, y);
   }
+
+  addCell(cell: BstCell, parent: BstCell | null, left: boolean = true): void {
+    this.data.push(cell);
+    // this.setLeftChild(parent, cell)
+    if (left) {
+      this.setLeftChild(parent, cell);
+    } else {
+      this.setRightChild(parent, cell);
+    }
+  }
+
+  /**
+   * Removes cell from the tree and detaches it from all other cells.
+   * @param cell
+   */
+  deleteCell(cell: BstCell): void {
+    this.links = this.links.filter((sl: SimulationLink) => sl.target !== cell && sl.source !== cell);
+    this.data = this.data.filter(c => c !== cell);
+    this.detachChildren(cell);
+    this.detachParent(cell);
+  }
+
 
   addChildCells(cell: BstCell): void {
     const leftChild = new BstCell(this, this.maxId++, cell.x, cell.y);
@@ -41,6 +66,7 @@ export class BinarySearchTree extends BinaryTree {
       this.isValid = false;
       bstCell.isValid = false;
     }
+
   }
 
   async find(value: number): Promise<BstCell | null> {
@@ -269,5 +295,133 @@ export class BinarySearchTree extends BinaryTree {
     }
 
     return true;
+  }
+
+  /**
+   * @param cell - Parent
+   * @returns - The left child of the provided *cell*.
+   * If *cell* isn't provided, returns undefined.
+   * @protected
+   */
+  protected getLeftChild(cell: BstCell): BstCell | undefined {
+    if (!cell) {
+      return undefined;
+    }
+    const children = this.children[cell.id];
+    if (!children) {
+      return undefined;
+    }
+    return children[0];
+  }
+
+  /**
+   * Sets the child cell as the left child of the parent cell.
+   * @param parent
+   * @param child
+   * @protected
+   */
+  protected setLeftChild(parent: BstCell, child: BstCell): void {
+    this.detachParent(child);
+
+    const parentId = !!parent ? parent.id : -1;
+    if (!this.children[parentId]) {
+      this.children[parentId] = [undefined, undefined];
+    }
+    this.children[parentId][0] = child;
+    this.parents[child.id] = [parent, 0];
+  }
+
+  /**
+   * @param cell - Parent
+   * @returns - The right child of the provided *cell*.
+   * If *cell* isn't provided, returns undefined.
+   * @protected
+   */
+  protected getRightChild(cell: BstCell): BstCell | undefined {
+    if (!cell) {
+      return undefined;
+    }
+    const children = this.children[cell.id];
+    if (!children) {
+      return undefined;
+    }
+    return children[1];
+  }
+
+  /**
+   * Sets the child cell as the right child of the parent cell.
+   * @param parent
+   * @param child
+   * @protected
+   */
+  protected setRightChild(parent: BstCell, child: BstCell): void {
+    this.detachParent(child);
+
+    const parentId = !!parent ? parent.id : -1;
+    if (!this.children[parentId]) {
+      this.children[parentId] = [undefined, undefined];
+    }
+    this.children[parentId][1] = child;
+    this.parents[child.id] = [parent, 1];
+  }
+
+  /**
+   *
+   * @param cell - Child cell.
+   * @returns - The list which contains the parent of the passed cell,
+   * and an index denoting whether the cell is left (0) or the right(1)
+   * child of the parent.
+   * If there's no cell, a list with undefined elements is returned.
+   * @protected
+   */
+  protected getParent(cell: BstCell): [BstCell, number] | [undefined, undefined] {
+    if (!cell) {
+      return [undefined, undefined];
+    }
+    return this.parents[cell.id];
+  }
+
+  /**
+   * Detaches cell from its children.
+   * @param cell - Parent which will be detached from its children.
+   * @protected
+   */
+  protected detachChildren(cell: BstCell): void {
+    if (!this.children[cell.id]) {
+      return;
+    }
+    for (const cellsChild of this.children[cell.id]) {
+      if (!cellsChild) {
+        continue;
+      }
+      if (this.parents[cellsChild.id][0] === cell) {
+        delete this.parents[cellsChild.id];
+      }
+    }
+    delete this.children[cell.id];
+  }
+
+  /**
+   * Detaches cell from its parent.
+   * @param cell - Child which will be detached from its parent.
+   * @protected
+   */
+  protected detachParent(cell: BstCell): void {
+    if (!this.parents[cell.id]) {
+      return;
+    }
+    const [parent, childIndex] = this.parents[cell.id];
+    const parentId = !!parent ? parent.id : -1;
+    if (this.children[parentId][childIndex] === cell) {
+      this.children[parentId][childIndex] = undefined;
+    }
+    delete this.parents[cell.id];
+  }
+
+  /**
+   * @returns - The root of the tree.
+   */
+  getRoot(): BstCell {
+    return this.children[-1][0];
   }
 }

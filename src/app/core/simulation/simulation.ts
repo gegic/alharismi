@@ -14,18 +14,26 @@ import {ArrayCellDrawing} from './helpers/drawing/array-cell-drawing';
 import {ArrayDrag} from './helpers/drag/array-drag';
 import {ArrayCellMouse} from './helpers/mouse/array-cell-mouse';
 import {ArrayMouse} from './helpers/mouse/array-mouse';
-import {BinaryTreeHandler} from './handlers/binary-tree-handler';
+import {BinarySearchTreeHandler} from './handlers/binary-search-tree-handler';
 import {BstDrawing} from './helpers/drawing/bst-drawing';
 import {BstCellDrawing} from './helpers/drawing/bst-cell-drawing';
 import {BstCellDrag} from './helpers/drag/bst-cell-drag';
 import {BstCellMouse} from './helpers/mouse/bst-cell-mouse';
 import {LinkDrawingHelper} from './helpers/drawing/link-drawing-helper';
 import {BstMouse} from './helpers/mouse/bst-mouse';
-import {BinarySearchTree} from './structures/tree/binary-search-tree/binary-search-tree';
+import {BinarySearchTree} from './structures/tree/binary-tree/binary-search-tree/binary-search-tree';
 import {SimulationNode} from './basics/simulation-node';
 import {SimulationArray} from './structures/array/simulation-array';
-import {AvlTree} from './structures/tree/avl-tree/avl-tree';
-import {RedBlackTree} from './structures/tree/red-black-tree/red-black-tree';
+import {AvlTree} from './structures/tree/binary-tree/avl-tree/avl-tree';
+import {RedBlackTree} from './structures/tree/binary-tree/red-black-tree/red-black-tree';
+import {HeapHandler} from './handlers/heap-handler';
+import {HeapDrawing} from './helpers/drawing/heap-drawing';
+import {HeapMouse} from './helpers/mouse/heap-mouse';
+import {Heap} from './structures/tree/binary-tree/heap/heap';
+import {LinkedList} from './structures/tree/linked-list/linked-list';
+import {LinkedListHandler} from './handlers/linked-list-handler';
+import {LinkedListDrawing} from './helpers/drawing/linked-list-drawing';
+import {LinkedListMouse} from './helpers/mouse/linked-list-mouse';
 
 export class Simulation {
 
@@ -35,8 +43,9 @@ export class Simulation {
 
   nodeHandler?: NodeHandler;
   arrayHandler?: ArrayHandler;
-  bstHandler?: BinaryTreeHandler;
-
+  bstHandler?: BinarySearchTreeHandler;
+  heapHandler?: HeapHandler;
+  linkedListHandler?: LinkedListHandler;
   camera?: Camera;
 
   constructor(canvas: d3.Selection<any, any, d3.BaseType, any>) {
@@ -79,7 +88,7 @@ export class Simulation {
       this.canvas
     );
 
-    this.bstHandler = new BinaryTreeHandler(
+    this.bstHandler = new BinarySearchTreeHandler(
       this,
       null,
       new BstDrawing(),
@@ -91,18 +100,42 @@ export class Simulation {
       this.canvas
     );
 
-    this.loop.setHandlers(this.nodeHandler, this.bstHandler, this.arrayHandler);
+    this.heapHandler = new HeapHandler(
+      this,
+      null,
+      new HeapDrawing(),
+      new HeapMouse(this),
+      new BstCellDrawing(),
+      new BstCellDrag(this),
+      new BstCellMouse(this, colorProvider),
+      new LinkDrawingHelper(),
+      this.canvas
+    );
+
+    this.linkedListHandler = new LinkedListHandler(
+      this,
+      null,
+      new LinkedListDrawing(),
+      new LinkedListMouse(this),
+      new BstCellDrawing(),
+      new BstCellDrag(this),
+      new BstCellMouse(this, colorProvider),
+      new LinkDrawingHelper(),
+      this.canvas
+    );
+
+    this.loop.setHandlers(this.nodeHandler, this.bstHandler, this.heapHandler, this.linkedListHandler, this.arrayHandler);
   }
 
   async get_level(): Promise<void> {
     const nodes = this.nodeHandler.generateNodes(11, null);
     const anotherNode = new SimulationNode(25, -1, 0, 0);
     this.nodeHandler.add(nodes);
-    this.nodeHandler.add(anotherNode);
-    const arr = new SimulationArray(-1, 10, 0, 0);
-    this.arrayHandler.add(arr);
+    // this.nodeHandler.add(anotherNode);
+    // const arr = new SimulationArray(-1, 10, 0, 0);
+    // this.arrayHandler.add(arr);
 
-    const bst = new RedBlackTree(-1, 0, 0);
-    this.bstHandler.add(bst);
+    const linkedList = new LinkedList(-1, 0, 0, true);
+    this.linkedListHandler.add(linkedList);
   }
 }

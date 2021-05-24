@@ -7,7 +7,7 @@ import {SimulationArray} from '../../structures/array/simulation-array';
 import {SimulationNode} from '../../basics/simulation-node';
 import {Simulation} from '../../simulation';
 import {BstCell} from '../../structures/tree/bst-cell';
-import {BinarySearchTree} from '../../structures/tree/binary-search-tree/binary-search-tree';
+import {BinarySearchTree} from '../../structures/tree/binary-tree/binary-search-tree/binary-search-tree';
 
 export class ArrayMouse implements MouseHelper<SimulationArray> {
 

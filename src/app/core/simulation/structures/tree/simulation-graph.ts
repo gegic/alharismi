@@ -15,6 +15,12 @@ export class SimulationGraph implements SimulationNodeDatum {
   protected links: SimulationLink[] = [];
   maxId = 0;
 
+  constructor(id: number, x: number, y: number) {
+    this.id = id;
+    this.x = x;
+    this.y = y;
+  }
+
   moveCell(cell: BstCell, xPos: number, yPos: number): void {
     cell.setTarget(cell.graphX, cell.graphY);
     return;

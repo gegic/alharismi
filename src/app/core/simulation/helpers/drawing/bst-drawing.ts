@@ -1,6 +1,6 @@
 import {DrawingHelper} from './drawing-helper';
 import * as d3 from 'd3';
-import {BinarySearchTree} from '../../structures/tree/binary-search-tree/binary-search-tree';
+import {BinarySearchTree} from '../../structures/tree/binary-tree/binary-search-tree/binary-search-tree';
 
 export class BstDrawing implements DrawingHelper<BinarySearchTree> {
 

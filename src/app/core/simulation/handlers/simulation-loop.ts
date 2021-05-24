@@ -8,9 +8,11 @@ import {ColorProvider} from '../providers/color-provider';
 import {SimulationText} from '../basics/simulation-text';
 import {DrawableHandler} from './drawable-handler';
 import {SimulationArray} from '../structures/array/simulation-array';
-import {BinarySearchTree} from '../structures/tree/binary-search-tree/binary-search-tree';
+import {BinarySearchTree} from '../structures/tree/binary-tree/binary-search-tree/binary-search-tree';
 import {BstCell} from '../structures/tree/bst-cell';
 import {SimulationLink} from '../basics/simulation-link';
+import {BinaryTree} from '../structures/tree/binary-tree/binary-tree';
+import {SimulationGraph} from '../structures/tree/simulation-graph';
 
 export class SimulationLoop {
   nodeElements?: Selection<any, any, d3.BaseType, any>;
@@ -25,7 +27,7 @@ export class SimulationLoop {
 
   nodes: (SimulationNode | SimulationArray | BstCell)[] = [];
 
-  drawableHandlers: DrawableHandler<SimulationNode | SimulationArray | BinarySearchTree>[] = [];
+  drawableHandlers: DrawableHandler<SimulationNode | SimulationArray | SimulationGraph>[] = [];
 
   setupForce(): void {
     this.force = d3.forceSimulation([])
@@ -120,7 +122,7 @@ export class SimulationLoop {
     // this.arrows = svg.selectAll('.circlearrow');
   }
 
-  setHandlers(...drawableHandlers: DrawableHandler<SimulationNode | SimulationArray | BinarySearchTree>[]): void {
+  setHandlers(...drawableHandlers: DrawableHandler<SimulationNode | SimulationArray | SimulationGraph>[]): void {
     this.drawableHandlers = drawableHandlers;
   }
 }

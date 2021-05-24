@@ -1,10 +1,10 @@
-import {SimulationNode} from '../../../basics/simulation-node';
-import {BstCell} from '../bst-cell';
+import {SimulationNode} from '../../../../basics/simulation-node';
+import {BstCell} from '../../bst-cell';
 import {BinarySearchTree} from '../binary-search-tree/binary-search-tree';
-import {BstCellDrag} from '../../../helpers/drag/bst-cell-drag';
-import {SimulationLink} from '../../../basics/simulation-link';
+import {BstCellDrag} from '../../../../helpers/drag/bst-cell-drag';
+import {SimulationLink} from '../../../../basics/simulation-link';
 import {root} from 'rxjs/internal-compatibility';
-import {BstCellDrawing} from '../../../helpers/drawing/bst-cell-drawing';
+import {BstCellDrawing} from '../../../../helpers/drawing/bst-cell-drawing';
 
 enum Color {
   RED = '#FF5A5A94',

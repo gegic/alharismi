@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import {SimulationNode} from '../../basics/simulation-node';
 import {Simulation} from '../../simulation';
 import {BstCell} from '../../structures/tree/bst-cell';
-import {BinarySearchTree} from '../../structures/tree/binary-search-tree/binary-search-tree';
+import {BinarySearchTree} from '../../structures/tree/binary-tree/binary-search-tree/binary-search-tree';
 import {BstCellMouse} from './bst-cell-mouse';
 
 export class BstMouse implements MouseHelper<BinarySearchTree> {
