@@ -8,6 +8,11 @@ import {SimulationNode} from '../../basics/simulation-node';
 import {Simulation} from '../../simulation';
 import {BstCell} from '../../structures/tree/bst-cell';
 import {BinarySearchTree} from '../../structures/tree/binary-tree/binary-search-tree/binary-search-tree';
+import {InsertionSort} from '../../structures/array/insertion-sort';
+import {SelectionSort} from '../../structures/array/selection-sort';
+import {BubbleSort} from '../../structures/array/bubble-sort';
+import {MergeSort} from '../../structures/array/merge-sort';
+import {QuickSort} from '../../structures/array/quick-sort';
 
 export class ArrayMouse implements MouseHelper<SimulationArray> {
 
@@ -16,27 +21,6 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
   constructor(simulation: Simulation) {
     this.simulation = simulation;
   }
-
-  // mouseOver(d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>): void {
-  //
-  //   d3.select(arrays[i])
-  //     .select('.array-bg')
-  //     .style('stroke-width', 3)
-  //     .transition()
-  //     .duration(600)
-  //     .ease(d3.easeLinear)
-  //     .style('stroke-width', 10);
-  // }
-  //
-  // mouseOut(d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>): void {
-  //   d3.select(arrays[i])
-  //     .select('.array-bg')
-  //     .transition()
-  //     .duration(600)
-  //     .ease(d3.easeLinear)
-  //     .style('stroke-width', 3);
-  //
-  // }
 
   contextMenu(d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>): void {
     const menu = [
@@ -50,7 +34,7 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
           if (isNaN(parsed)) {
             parsed = 10;
           }
-          elm.setSize(parsed);
+          elm.setCapacity(parsed);
         }
       },
       {
@@ -71,29 +55,6 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
         // divider
         divider: true
       },
-      // {
-      //   title: 'Insert',
-      //   action: async function (elm, d, i) {
-      //     var number = prompt('Set value to')
-      //     var arr = elm.parent
-      //
-      //     var numbers = getAllNumbersInString(number)
-      //     var circles = circleManager.generateNodes(numbers.length, true, true, () => {}, true)
-      //
-      //     circles.forEach((d,i) =>
-      //     {
-      //       d.value = numbers[i]
-      //       d.isNumberVisible = true; d.isRevealed = true;
-      //     } )
-      //     var queue = new CircleQueue(circles, arr)
-      //     await asyncForEach(circles, async function (d) {
-      //       await arr.addCircleToSortedArray(d)
-      //       queue.pop()
-      //       repaint()
-      //     })
-      //
-      //   }
-      // },
       {
         title: 'Find',
         action: async (arr: SimulationArray) => {
@@ -132,6 +93,49 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
           }
           await arr.deleteAt(index);
         }
+      },
+      {
+        divider: true
+      },
+      {
+        title: 'Sort',
+        children: [
+          {
+            title: 'Insertion',
+            action: async (arr: SimulationArray) => {
+              arr.sorting = new InsertionSort();
+              await arr.sort();
+            }
+          },
+          {
+            title: 'Selection',
+            action: async (arr: SimulationArray) => {
+              arr.sorting = new SelectionSort();
+              await arr.sort();
+            }
+          },
+          {
+            title: 'Bubble',
+            action: async (arr: SimulationArray) => {
+              arr.sorting = new BubbleSort();
+              await arr.sort();
+            }
+          },
+          {
+            title: 'Merge',
+            action: async (arr: SimulationArray) => {
+              arr.sorting = new MergeSort();
+              await arr.sort();
+            }
+          },
+          {
+            title: 'Quick',
+            action: async (arr: SimulationArray) => {
+              arr.sorting = new QuickSort();
+              await arr.sort();
+            }
+          }
+        ]
       }
     ];
 

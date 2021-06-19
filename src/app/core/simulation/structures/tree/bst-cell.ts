@@ -9,6 +9,7 @@ import {SimulationGraph} from './simulation-graph';
 export class BstCell implements SimulationNodeDatum {
   radius = 50;
 
+  defaultColor = '#E2E8CE';
   color = '#E2E8CE';
   descriptor?: string;
   isRoot = false;
@@ -83,6 +84,19 @@ export class BstCell implements SimulationNodeDatum {
     d.lockedPlaceholder = undefined;
     d.nodeOrder = 1;
     return d;
+  }
+
+  setDefaultColor(color: string): void {
+    this.defaultColor = color;
+  }
+
+  highlight(color: string): void {
+    this.color = color;
+  }
+
+  resetColor(): string {
+    this.color = this.defaultColor;
+    return this.color;
   }
 
   get x(): number {

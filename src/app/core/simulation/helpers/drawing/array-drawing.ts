@@ -18,7 +18,7 @@ export class ArrayDrawing implements DrawingHelper<SimulationArray> {
       .attr('class', 'array-bg')
       .attr('x', -25)
       .attr('y', -60)
-      .attr('width', (arr: SimulationArray) => arr.size * (arr.cellWidth + arr.cellWidth / 20) + 45)
+      .attr('width', (arr: SimulationArray) => arr.capacity * (arr.cellWidth + arr.cellWidth / 20) + 45)
       .attr('height', 200)
       .attr('rx', 25)
       .attr('ry', 25)
@@ -31,15 +31,13 @@ export class ArrayDrawing implements DrawingHelper<SimulationArray> {
     arrayElement
       .append('text')
       .attr('class', 'array-title')
-      .attr('dx', arr => (arr.size * arr.cellWidth) / 2)
+      .attr('dx', arr => (arr.capacity * arr.cellWidth) / 2)
       .attr('dy', -25)
-      .text(arr => arr.descriptor)
+      .text(arr => `${arr.descriptor}${arr.sorted ? ' (sorted)' : ''}`)
       .attr('font-size', 30)
       .style('fill', 'white')
       .style('text-anchor', 'middle')
       .attr('pointer-events', 'none');
-
-    // arrayElement
 
     return arrayElement;
   }
@@ -47,14 +45,13 @@ export class ArrayDrawing implements DrawingHelper<SimulationArray> {
   update(updateElement: d3.Selection<d3.BaseType, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
     updateElement
       .select('.array-bg')
-      .attr('width', (arr: SimulationArray) => arr.size * (arr.cellWidth + arr.cellWidth / 20) + 45)
+      .attr('width', (arr: SimulationArray) => arr.capacity * (arr.cellWidth + arr.cellWidth / 20) + 45)
       .lower();
 
     updateElement
       .select('.array-title')
-      .attr('dx', arr => (arr.size * arr.cellWidth) / 2)
-      .text(arr => arr.descriptor);
-
+      .attr('dx', arr => (arr.capacity * arr.cellWidth) / 2)
+      .text(arr => `${arr.descriptor}${arr.sorted ? ' (sorted)' : ''}`);
     return updateElement;
   }
 

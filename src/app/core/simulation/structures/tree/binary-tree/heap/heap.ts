@@ -36,7 +36,7 @@ export class Heap extends BinaryTree {
     this.addCell(nextCell);
     const [parent] = this.getParent(nextCell, this.size);
     if (!!parent) {
-      this.links.push(new SimulationLink(parent, nextCell));
+      this.linkHelper.addLink(parent, nextCell);
     }
   }
 
@@ -134,6 +134,7 @@ export class Heap extends BinaryTree {
     second.color = oldParentColor;
     await new Promise(r => setTimeout(r, 600));
   }
+
   getMinChild(cell: BstCell): BstCell | null{
     const leftChild = this.getLeftChild(cell);
     const rightChild = this.getRightChild(cell);
@@ -153,12 +154,13 @@ export class Heap extends BinaryTree {
       }
     }
   }
+
   deleteCell(cell: BstCell): void {
     const lastCell = this.getEmptyCell();
     if (cell !== lastCell) {
       return;
     }
-    this.links = this.links.filter((sl: SimulationLink) => sl.target !== lastCell);
+    this.linkHelper.detachCompletely(cell);
     this.removeCell(this.size--);
   }
 

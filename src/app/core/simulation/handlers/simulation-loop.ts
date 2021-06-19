@@ -31,20 +31,16 @@ export class SimulationLoop {
 
   setupForce(): void {
     this.force = d3.forceSimulation([])
-      .force('charge',
-        d3.forceManyBody()
-          .strength(-200)
-          .distanceMin(10)
-      )
+
       .force('x',
         d3.forceX()
           .x((d: SimulationNode) => d.cx)
-          .strength(0.15)
+          .strength(.2)
       )
       .force('y',
         d3.forceY()
           .y((d: SimulationNode) => d.cy)
-          .strength(0.1)
+          .strength(.2)
       )
       .force(
         'link',
@@ -54,7 +50,9 @@ export class SimulationLoop {
       )
       .force(
         'collision',
-        d3.forceCollide().radius((n: SimulationNode | BstCell) => n.radius)
+        d3.forceCollide()
+          .strength(1)
+          .radius((n: SimulationNode | BstCell) => n.radius)
       )
       .alphaTarget(.5)
       .on('tick', this.ticked(30));
@@ -90,23 +88,19 @@ export class SimulationLoop {
         this.drawableHandlers.forEach(handler => handler.draw());
 
         this.nodeElements
-          ?.attr('transform', (d: SimulationNode) => {
-            return `translate(${d.x}, ${d.y})`;
-          });
+          ?.attr('transform', (d: SimulationNode) => `translate(${d.x}, ${d.y})`);
 
         this.arrayElements
           ?.attr('transform', d => `translate(${d.x}, ${d.y})`);
 
         this.bstCellElements
-          ?.attr('transform', d => {
-            return `translate(${d.x}, ${d.y})`;
-          });
+          ?.attr('transform', d => `translate(${d.x}, ${d.y})`);
 
         this.links
           ?.attr('x1', (d: SimulationLink) => d.source.x)
-          ?.attr('y1', (d: SimulationLink) => d.source.y)
+          ?.attr('y1', (d: SimulationLink) => d.source.y + d.yDisplacement)
           ?.attr('x2', (d: SimulationLink) => d.target.x)
-          ?.attr('y2', (d: SimulationLink) => d.target.y);
+          ?.attr('y2', (d: SimulationLink) => d.target.y + d.yDisplacement);
 
       }
     };

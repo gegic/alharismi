@@ -2,6 +2,7 @@ import {SimulationLink} from '../../basics/simulation-link';
 import {BstCell} from './bst-cell';
 import {SimulationNode} from '../../basics/simulation-node';
 import {SimulationNodeDatum} from 'd3-force';
+import {LinkHelper} from '../../helpers/link-helper';
 
 export class SimulationGraph implements SimulationNodeDatum {
   id: number;
@@ -11,8 +12,8 @@ export class SimulationGraph implements SimulationNodeDatum {
 
   z = -1;
   isValid = true;
+  linkHelper = new LinkHelper();
   protected data: BstCell[] = [];
-  protected links: SimulationLink[] = [];
   maxId = 0;
 
   constructor(id: number, x: number, y: number) {
@@ -38,6 +39,6 @@ export class SimulationGraph implements SimulationNodeDatum {
   }
 
   getLinks(): SimulationLink[] {
-    return this.links;
+    return this.linkHelper.links;
   }
 }

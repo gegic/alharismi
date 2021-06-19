@@ -9,7 +9,6 @@ import {BstCell} from '../../structures/tree/bst-cell';
 export class BstCellDrag implements DragHelper<BstCell> {
 
   simulation: Simulation;
-  previouslyHoveredPlaceholders: Selection<any, any, any, any>[] = [];
 
   constructor(simulation: Simulation) {
     this.simulation = simulation;

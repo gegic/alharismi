@@ -21,14 +21,8 @@ export class ArrayCellMouse implements MouseHelper<ArrayCell> {
       return;
     }
 
-    d3.select(cells[i])
-      .select('.array-cell-container')
-      .transition()
-      .duration(600)
-      .ease(d3.easeExpOut)
-      .attr('rx', 50)
-      .attr('ry', 50);
-
+    d.rx = 50;
+    d.ry = 50;
     this.simulation.loop.draggedNode.hoveringGrid = d;
 
     d.hoveringNode = this.simulation.loop.draggedNode;
@@ -41,13 +35,8 @@ export class ArrayCellMouse implements MouseHelper<ArrayCell> {
 
     d.isMouseOver = false;
 
-    d3.select(cells[i])
-      .select('.array-cell-container')
-      .transition()
-      .duration(600)
-      .ease(d3.easeExpOut)
-      .attr('rx', 25)
-      .attr('ry', 25);
+    d.rx = 25;
+    d.ry = 25;
 
     if (!this.simulation.loop.draggedNode || !!d.node) {
       return;

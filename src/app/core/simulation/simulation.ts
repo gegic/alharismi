@@ -131,11 +131,8 @@ export class Simulation {
     const nodes = this.nodeHandler.generateNodes(11, null);
     const anotherNode = new SimulationNode(25, -1, 0, 0);
     this.nodeHandler.add(nodes);
-    // this.nodeHandler.add(anotherNode);
-    // const arr = new SimulationArray(-1, 10, 0, 0);
-    // this.arrayHandler.add(arr);
-
-    const linkedList = new LinkedList(-1, 0, 0, true);
-    this.linkedListHandler.add(linkedList);
+    this.nodeHandler.add(anotherNode);
+    const arr = new SimulationArray(-1, 10, 0, 0);
+    this.arrayHandler.add(arr);
   }
 }

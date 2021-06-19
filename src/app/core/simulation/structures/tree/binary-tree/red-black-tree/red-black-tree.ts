@@ -204,19 +204,13 @@ export class RedBlackTree extends BinarySearchTree {
     const t = this.getLeftChild(newRoot);
     // Perform rotation
 
-    let removeIndex = this.links.findIndex((sl: SimulationLink) => sl.source === newRoot && sl.target === t);
-    if (removeIndex !== -1) {
-      this.links.splice(removeIndex, 1);
-    }
+    this.linkHelper.removeLink(newRoot, t);
     this.setRightChild(rotationRoot, t);
-    this.links.push(new SimulationLink(rotationRoot, t));
+    this.linkHelper.addLink(rotationRoot, t);
 
     const [rootParent, childIndex] = this.getParent(rotationRoot);
     this.detachParent(rotationRoot);
-    removeIndex = this.links.findIndex((sl: SimulationLink) => sl.source === rootParent && sl.target === rotationRoot);
-    if (removeIndex !== -1) {
-      this.links.splice(removeIndex, 1);
-    }
+    this.linkHelper.removeLink(rootParent, rotationRoot);
     if (!rootParent) {
       newRoot.isRoot = true;
       newRoot.descriptor = rotationRoot.descriptor;
@@ -228,15 +222,12 @@ export class RedBlackTree extends BinarySearchTree {
       this.setRightChild(rootParent, newRoot);
     }
     if (!!rootParent) {
-      this.links.push(new SimulationLink(rootParent, newRoot));
+      this.linkHelper.addLink(rootParent, newRoot);
     }
 
-    removeIndex = this.links.findIndex((sl: SimulationLink) => sl.source === rotationRoot && sl.target === newRoot);
-    if (removeIndex !== -1) {
-      this.links.splice(removeIndex, 1);
-    }
+    this.linkHelper.removeLink(rotationRoot, newRoot);
     this.setLeftChild(newRoot, rotationRoot);
-    this.links.push(new SimulationLink(newRoot, rotationRoot));
+    this.linkHelper.addLink(newRoot, rotationRoot);
 
     this.alignForces();
   }
@@ -246,19 +237,13 @@ export class RedBlackTree extends BinarySearchTree {
     const t = this.getRightChild(newRoot);
     // Perform rotation
 
-    let removeIndex = this.links.findIndex((sl: SimulationLink) => sl.source === newRoot && sl.target === t);
-    if (removeIndex !== -1) {
-      this.links.splice(removeIndex, 1);
-    }
+    this.linkHelper.removeLink(newRoot, t);
     this.setLeftChild(rotationRoot, t);
-    this.links.push(new SimulationLink(rotationRoot, t));
+    this.linkHelper.addLink(rotationRoot, t);
 
     const [rootParent, childIndex] = this.getParent(rotationRoot);
     this.detachParent(rotationRoot);
-    removeIndex = this.links.findIndex((sl: SimulationLink) => sl.source === rootParent && sl.target === rotationRoot);
-    if (removeIndex !== -1) {
-      this.links.splice(removeIndex, 1);
-    }
+    this.linkHelper.removeLink(rootParent, rotationRoot);
     if (!rootParent) {
       newRoot.isRoot = true;
       newRoot.descriptor = rotationRoot.descriptor;
@@ -270,15 +255,12 @@ export class RedBlackTree extends BinarySearchTree {
       this.setRightChild(rootParent, newRoot);
     }
     if (!!rootParent) {
-      this.links.push(new SimulationLink(rootParent, newRoot));
+      this.linkHelper.addLink(rootParent, newRoot);
     }
 
-    removeIndex = this.links.findIndex((sl: SimulationLink) => sl.source === rotationRoot && sl.target === newRoot);
-    if (removeIndex !== -1) {
-      this.links.splice(removeIndex, 1);
-    }
+    this.linkHelper.removeLink(rotationRoot, newRoot);
     this.setRightChild(newRoot, rotationRoot);
-    this.links.push(new SimulationLink(newRoot, rotationRoot));
+    this.linkHelper.addLink(newRoot, rotationRoot);
 
     this.alignForces();
   }
@@ -295,6 +277,6 @@ export class RedBlackTree extends BinarySearchTree {
 
   setColor(cell: BstCell, color: Color): void {
     this.colors[cell.id] = color;
-    cell.color = color;
+    cell.setDefaultColor(color);
   }
 }

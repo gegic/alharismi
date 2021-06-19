@@ -32,7 +32,7 @@ export class BinarySearchTree extends BinaryTree {
    * @param cell
    */
   deleteCell(cell: BstCell): void {
-    this.links = this.links.filter((sl: SimulationLink) => sl.target !== cell && sl.source !== cell);
+    this.linkHelper.detachCompletely(cell);
     this.data = this.data.filter(c => c !== cell);
     this.detachChildren(cell);
     this.detachParent(cell);
@@ -46,10 +46,8 @@ export class BinarySearchTree extends BinaryTree {
     this.addCell(leftChild, cell, false);
     this.addCell(rightChild, cell, true);
 
-    this.links.push(
-      new SimulationLink(cell, leftChild),
-      new SimulationLink(cell, rightChild)
-    );
+    this.linkHelper.addLink(cell, leftChild);
+    this.linkHelper.addLink(cell, rightChild);
   }
 
   async add(d: SimulationNode, bstCell: BstCell): Promise<void> {
@@ -173,7 +171,7 @@ export class BinarySearchTree extends BinaryTree {
     await new Promise(r => setTimeout(r, 600));
 
     if (parent) {
-      this.links.push(new SimulationLink(parent, takenCell));
+      this.linkHelper.addLink(parent, takenCell);
     } else {
       this.setLeftChild(null, takenCell);
       takenCell.descriptor = target.descriptor;

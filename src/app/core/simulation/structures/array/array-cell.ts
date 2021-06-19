@@ -11,6 +11,10 @@ export class ArrayCell {
   hoveringNode?: SimulationNode;
   parent: SimulationArray;
   isMouseOver = false;
+  defaultColor = '#E2E8CE';
+  color = '#E2E8CE';
+  rx = 25;
+  ry = 25;
 
   constructor(parent: SimulationArray, x: number, y: number, width: number, height: number, id: number) {
     this.parent = parent;
@@ -33,6 +37,8 @@ export class ArrayCell {
     node.nodeOrder = 2;
     node.x = this.parent.x + this.x + this.width / 2;
     node.y = this.height / 2 + this.parent.y;
+    this.parent.sorted = false;
+    this.parent.size++;
   }
 
   removeNode(): SimulationNode | null {
@@ -48,11 +54,33 @@ export class ArrayCell {
     node.fy = undefined;
     node.nodeOrder = 1;
     node.noCollision = false;
+    this.parent.sorted = false;
+    this.parent.size--;
     return node;
   }
 
   toString(): string {
-    return `${parent.name}[${this.id}]`;
+    return `[${this.id}]`;
   }
 
+  setDefaultColor(color: string): void {
+    this.defaultColor = color;
+  }
+
+  highlight(color: string): void {
+    this.color = color;
+  }
+
+  resetColor(): string {
+    this.color = this.defaultColor;
+    return this.color;
+  }
+
+  get absoluteX(): number {
+    return this.parent.x + this.x + this.width / 2;
+  }
+
+  get absoluteY(): number {
+    return this.parent.y + this.y + this.height / 2;
+  }
 }

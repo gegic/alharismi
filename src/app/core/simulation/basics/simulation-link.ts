@@ -10,9 +10,12 @@ export class SimulationLink implements SimulationLinkDatum<BstCell> {
   source: BstCell;
   target: BstCell;
 
-  constructor(source: BstCell, target: BstCell) {
+  yDisplacement: number;
+
+  constructor(source: BstCell, target: BstCell, yDisplacement = 0) {
     this.source = source;
     this.target = target;
+    this.yDisplacement = yDisplacement;
   }
 
 }

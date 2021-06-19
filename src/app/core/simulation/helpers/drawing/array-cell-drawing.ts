@@ -24,34 +24,40 @@ export class ArrayCellDrawing implements DrawingHelper<ArrayCell> {
       .attr('class', 'array-cell-container')
       .attr('x', d => d.x)
       .attr('y', d => d.y)
-      .attr('rx', 25)
-      .attr('ry', 25)
+      .attr('rx', d => d.rx)
+      .attr('ry', d => d.ry)
       .attr('width', d => d.width)
       .attr('height', d => d.height)
-      .style('fill', 'white')
-      .style('opacity', .5)
+      .style('fill', d => d.color)
+      .style('opacity', .9)
       .style('stroke-width', 5);
-      // .on('mouseover', (d: ArrayCell, i: number, cellElements: SVGRectElement[] | ArrayLike<SVGRectElement>) =>
-      //   this.arrayCellMouseOver(d))
-      // .on('mouseout', (d: ArrayCell, i: number, cellElements: SVGRectElement[] | ArrayLike<SVGRectElement>) =>
-      //   this.arrayCellMouseOut(d));
 
     return arrayCell;
   }
 
   update(updateElement: d3.Selection<d3.BaseType, ArrayCell, any, any>): d3.Selection<d3.BaseType, ArrayCell, any, any> {
+
     updateElement
       .select('.array-cell-name')
       .attr('dx', (d) => d.x + d.width / 2)
       .text((d: ArrayCell) => d.toString());
 
     updateElement
-      .select('array-cell-container')
+      .select('.array-cell-container')
       .attr('x', d => d.x)
       .attr('y', d => d.y)
       .attr('width', d => d.width)
-      .attr('height', d => d.height)
-      .style('fill', 'white');
+      .attr('height', d => d.height);
+
+    updateElement
+      .select('.array-cell-container')
+      .style('fill', d => d.defaultColor)
+      .transition()
+      .duration(600)
+      .ease(d3.easeExpOut)
+      .attr('rx', d => d.rx)
+      .attr('ry', d => d.ry)
+      .style('fill', d => d.color);
 
     return updateElement;
   }

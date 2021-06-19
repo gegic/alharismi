@@ -20,31 +20,76 @@ export class LinkedListMouse implements MouseHelper<LinkedList> {
   contextMenu(d: LinkedList, i: number, trees: d3Element[] | ArrayLike<d3Element>): void {
     const menu = [
       {
+        title: 'Prepend',
+        disabled: !d.isValid,
+        action: async (linkedList: LinkedList) => {
+          const newValue = parseFloat(prompt('Which value to prepend'));
+          if (isNaN(newValue)) {
+            alert('Value invalid');
+            return;
+          }
+          const node = new SimulationNode(newValue, -1, linkedList.x, linkedList.y - 150);
+          this.simulation.nodeHandler.add(node);
+          await linkedList.prepend(node);
+        }
+      },
+      {
+        title: 'Append',
+        disabled: !d.isValid,
+        action: async (linkedList: LinkedList) => {
+          const newValue = parseFloat(prompt('Which value to append'));
+          if (isNaN(newValue)) {
+            alert('Value invalid');
+            return;
+          }
+          const node = new SimulationNode(newValue, -1, linkedList.x, linkedList.y - 150);
+          this.simulation.nodeHandler.add(node);
+          await linkedList.append(node);
+        }
+      },
+      {
         title: 'Insert',
         disabled: !d.isValid,
-        action: async (heap: LinkedList) => {
-          // const newValue = parseFloat(prompt('Which value to insert'));
-          // if (isNaN(newValue)) {
-          //   alert('Value invalid');
-          //   return;
-          // }
-          // const lastCell = heap.getEmptyCell();
-          // const node = new SimulationNode(newValue, -1, lastCell.x, lastCell.y - 150);
-          // this.simulation.nodeHandler.add(node);
-          // await heap.insert(node);
+        action: async (linkedList: LinkedList) => {
+          const newValue = parseFloat(prompt('Which value to insert'));
+          const index = parseFloat(prompt('At which index to insert?'));
+
+          if (isNaN(newValue) || isNaN(index)) {
+            alert('Value invalid');
+            return;
+          }
+          const node = new SimulationNode(newValue, -1, linkedList.x, linkedList.y - 150);
+          this.simulation.nodeHandler.add(node);
+          await linkedList.insert(node, index);
+        }
+      },
+      {
+        divider: true
+      },
+      {
+        title: 'Pop first',
+        disabled: d.getData().length <= 2,
+        action: async (linkedList: LinkedList) => {
+          await linkedList.popFirst();
+        }
+      },
+      {
+        title: 'Pop last',
+        disabled: d.getData().length <= 2,
+        action: async (linkedList: LinkedList) => {
+          await linkedList.popLast();
         }
       },
       {
         title: 'Delete',
-        disabled: !d.isValid,
-        action: async (heap: LinkedList) => {
-          // const deleteValue = parseFloat(prompt('Which value to delete'));
-          // if (isNaN(deleteValue)) {
-          //   alert('Value invalid');
-          //   return;
-          // }
-          //
-          // await heap.delete(deleteValue);
+        disabled: d.getData().length <= 2,
+        action: async (linkedList: LinkedList) => {
+          const index = parseFloat(prompt('From which index to delete'));
+          if (isNaN(index)) {
+            alert('Value invalid');
+            return;
+          }
+          await linkedList.delete(index);
         }
       },
       {

@@ -108,7 +108,7 @@ export class LinkedListHandler implements DrawableHandler<LinkedList> {
 
     updateElement
       .selectAll('.link')
-      .data((d: LinkedList) => d.getLinks(), (link: SimulationLink) => `${link.target.id}_${link.target.id}`)
+      .data((d: LinkedList) => d.getLinks(), (link: SimulationLink) => `${link.source.id}_${link.target.id}`)
       .join(enterLink => {
         const linkElement = this.linkDrawingHelper.enter(enterLink);
         linkElement.lower();

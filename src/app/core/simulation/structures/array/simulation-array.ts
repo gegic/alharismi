@@ -2,6 +2,7 @@ import {Selection} from 'd3-selection';
 import {SimulationNode} from '../../basics/simulation-node';
 import {ArrayCell} from './array-cell';
 import {SimulationNodeDatum} from 'd3-force';
+import {Sort} from './sort';
 
 export class SimulationArray implements SimulationNodeDatum{
 
@@ -9,7 +10,8 @@ export class SimulationArray implements SimulationNodeDatum{
   cellHeight = 100;
 
   id: number;
-  size: number;
+  capacity: number;
+  size = 0;
   data: ArrayCell[];
   x: number;
   y: number;
@@ -17,6 +19,9 @@ export class SimulationArray implements SimulationNodeDatum{
   color: string;
   isStatic: boolean;
   descriptor: string;
+  sorting?: Sort;
+  sorted = false;
+  busy = false;
 
   constructor(id: number, size: number, x: number, y: number, descriptor?: string){
     this.id = id;
@@ -29,7 +34,7 @@ export class SimulationArray implements SimulationNodeDatum{
     this.color = 'black';
     this.isStatic = false;
     this.descriptor = descriptor ?? `array${id}`;
-    this.setSize(size);
+    this.setCapacity(size);
   }
 
   add(nodes: SimulationNode[]): void {
@@ -68,8 +73,8 @@ export class SimulationArray implements SimulationNodeDatum{
     }
   }
 
-  setSize(size: number): void {
-    this.size = size;
+  setCapacity(size: number): void {
+    this.capacity = size;
 
     if (size < this.data.length) {
       for (let i = size ; i < this.data.length; i++)
@@ -87,7 +92,7 @@ export class SimulationArray implements SimulationNodeDatum{
   }
 
   async linearFindElement(value: number): Promise<void> {
-    for (let i = 0; i < this.size; ++i) {
+    for (let i = 0; i < this.capacity; ++i) {
       const cell = this.data[i];
       if (!cell.node) {
         continue;
@@ -96,15 +101,12 @@ export class SimulationArray implements SimulationNodeDatum{
       cell.node.drawArrow = true;
       cell.node.isValueVisible = true;
 
-      // // this.simulation.repaint();
-
       await new Promise(r => setTimeout(r, 600));
 
       cell.node.drawArrow = false;
 
       if (cell.node.value === value) {
         cell.node.highlighted = true;
-        // this.simulation./repaint();
         await new Promise(r => setTimeout(r, 1000));
         cell.node.highlighted = false;
         return;
@@ -124,8 +126,7 @@ export class SimulationArray implements SimulationNodeDatum{
 
     node.setTarget(this.x - 100, this.y - 100);
 
-    this.move(index, false);
-
+    await this.move(index, false);
     return node;
 
   }
@@ -135,7 +136,9 @@ export class SimulationArray implements SimulationNodeDatum{
       throw new Error('Incorrect index');
     }
 
-    await this.move(index, true);
+    if (!!this.data[index].node) {
+      await this.move(index, true);
+    }
 
     node.cx = this.data[index].x + this.x + this.cellWidth / 2;
     node.cy = this.data[index].y + this.y + this.cellHeight / 2;
@@ -165,7 +168,92 @@ export class SimulationArray implements SimulationNodeDatum{
       node.cy = this.data[i + step].y + this.y + this.cellHeight / 2;
       await new Promise(r => setTimeout(r, 600));
       this.data[i + step].addNode(node);
-      await new Promise(r => setTimeout(r, 300));    }
+      await new Promise(r => setTimeout(r, 300));
+    }
 
+  }
+
+  async removeEmptySpaces(): Promise<void> {
+    for (let i = 0; i < this.size; ++i) {
+      if (!this.data[i].node) {
+        const currentCell = this.data[i];
+        const takenCell = await this.findFirstTaken(i + 1);
+        if (!takenCell) {
+          return;
+        }
+        const node = takenCell.removeNode();
+        node.setTarget(currentCell.absoluteX, currentCell.absoluteY - 100);
+        await new Promise(r => setTimeout(r, 600));
+        node.setTarget(currentCell.absoluteX, currentCell.absoluteY);
+        await new Promise(r => setTimeout(r, 600));
+        currentCell.addNode(node);
+      }
+    }
+  }
+
+  async findFirstTaken(index: number): Promise<ArrayCell | undefined> {
+    for (index; index < this.capacity; ++index) {
+      if (!!this.data[index].node) {
+        this.data[index].highlight('#08ff00');
+        await new Promise(r => setTimeout(r, 600));
+        this.data[index].resetColor();
+        return this.data[index];
+      }
+      this.data[index].highlight('#98dc73');
+      await new Promise(r => setTimeout(r, 600));
+      this.data[index].resetColor();
+    }
+
+    return undefined;
+  }
+
+  async sort(): Promise<void> {
+    if (!this.sorting) {
+      return;
+    }
+    await this.removeEmptySpaces();
+    await this.sorting.sort(this);
+    this.sorted = true;
+
+    await new Promise(r => setTimeout(r, 1800));
+
+    this.data.filter(d => !!d.node).forEach(d => d.resetColor());
+  }
+
+  async swapNodes(source: ArrayCell, destination: ArrayCell): Promise<void> {
+    if (!source.node || !destination.node) {
+      return;
+    }
+    const sourceNode = source.removeNode();
+    const dstNode = destination.removeNode();
+
+    const middleX = (destination.absoluteX + source.absoluteX) / 2;
+
+    sourceNode.setTarget(middleX, destination.absoluteY - 75);
+    dstNode.setTarget(middleX, source.absoluteY + 75);
+    await new Promise(r => setTimeout(r, 600));
+
+    sourceNode.setTarget(destination.absoluteX, destination.absoluteY);
+    dstNode.setTarget(source.absoluteX, source.absoluteY);
+    await new Promise(r => setTimeout(r, 600));
+
+    source.addNode(dstNode);
+    destination.addNode(sourceNode);
+  }
+
+  async moveNode(source: ArrayCell, destination: ArrayCell): Promise<void> {
+    if (!source.node || !!destination.node) {
+      return;
+    }
+
+    const middleX = (destination.absoluteX + source.absoluteX) / 2;
+
+    const sourceNode = source.removeNode();
+    sourceNode.setTarget(middleX, destination.absoluteY - 100);
+    await new Promise(r => setTimeout(r, 600));
+    sourceNode.setTarget(destination.absoluteX, destination.absoluteY);
+    await new Promise(r => setTimeout(r, 600));
+
+    destination.addNode(sourceNode);
   }
 }

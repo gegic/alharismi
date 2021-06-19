@@ -10,18 +10,8 @@ export class LinkDrawingHelper implements DrawingHelper<SimulationLink> {
       .attr('class', 'link')
       .attr('stroke', 'white')
       .attr('stroke-width', 10)
+      .attr('stroke-linecap', 'round')
       .attr('stroke-opacity', 0.6);
-      // .on('mouseover', function (d) {
-      //   if (!temp.linksCutable || d.target.data.isPlaceholder) return
-      //   d3.select(this)
-      // })
-      // .on('mouseout', function (d) {
-      //   if (!temp.linksCutable || d.target.data.isPlaceholder) return
-      //   d3.select(this)
-      // })
-      // .on('click', function (d) {
-      //   temp.cutLink(d)
-      // })
     return linkElement;
   }
 

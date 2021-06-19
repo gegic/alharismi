@@ -84,7 +84,7 @@ export class BinarySearchTreeHandler implements DrawableHandler<BinarySearchTree
 
     treeElement
       .selectAll('.link')
-      .data((d: BinarySearchTree) => d.getLinks(), (link: SimulationLink) => `${link.target.id}_${link.target.id}`)
+      .data((d: BinarySearchTree) => d.getLinks(), (link: SimulationLink) => `${link.source.id}_${link.target.id}`)
       .join(enterLink => {
         const linkElement = this.linkDrawingHelper.enter(enterLink);
         linkElement.lower();
