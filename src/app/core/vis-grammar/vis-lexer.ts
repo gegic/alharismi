@@ -27,6 +27,9 @@ const eq = createToken({name: 'equals', pattern: /=/});
 const dot = createToken({name: 'dot', pattern: /\./});
 const comma = createToken({name: 'comma', pattern: /,/});
 const semicolon = createToken({name: 'semicolon', pattern: /;/});
+
+const template = createToken({ name: 'template', pattern: /<vis>((.|\n)*)<\/vis>/});
+
 const identifier = createToken({ name: 'identifier', pattern: /[a-zA-Z]\w*/ });
 
 const stringLiteral = createToken({
@@ -68,6 +71,7 @@ const allTokens = [
   dot,
   comma,
   semicolon,
+  template,
   identifier,
   stringLiteral,
   numberLiteral,
@@ -99,6 +103,7 @@ export {
   dot,
   comma,
   semicolon,
+  template,
   identifier,
   stringLiteral,
   numberLiteral,

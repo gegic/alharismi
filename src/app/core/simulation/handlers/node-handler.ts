@@ -13,6 +13,7 @@ import {DrawingHelper} from '../helpers/drawing/drawing-helper';
 import {DragHelper} from '../helpers/drag/drag-helper';
 import {MouseHelper} from '../helpers/mouse/mouse-helper';
 import {Simulation} from '../simulation';
+import {Drawable} from '../drawable';
 
 export class NodeHandler implements DrawableHandler<SimulationNode> {
 
@@ -44,27 +45,36 @@ export class NodeHandler implements DrawableHandler<SimulationNode> {
     this.colorProvider = colorProvider;
   }
 
-  add(obj: undefined | SimulationNode | SimulationNode[]): SimulationNode | SimulationNode[] {
+  add(obj: undefined | Drawable | Drawable[]): SimulationNode | SimulationNode[] {
+
+    let addingObj: undefined | SimulationNode | SimulationNode[];
+    if (obj instanceof SimulationNode) {
+      addingObj = obj as SimulationNode;
+    } else if (Array.isArray(obj)) {
+      addingObj = obj.map(el => el as SimulationNode);
+    } else {
+      addingObj = undefined;
+    }
     let values: number[];
-    if (Array.isArray(obj)) {
-      values = obj.map(sn => sn.value);
-      obj.forEach(d => {
+    if (Array.isArray(addingObj)) {
+      values = addingObj.map(sn => sn.value);
+      addingObj.forEach(d => {
         d.id = this.maxId++;
         this.data.push(d);
         // this.simulation.loop.nodes.push(d);
       });
     } else {
-      if (!obj) {
-        obj = new SimulationNode(this.generateRandomValue(), -1, 0, 0);
+      if (!addingObj) {
+        addingObj = new SimulationNode(this.generateRandomValue(), -1, 0, 0);
       }
-      values = [obj.value];
-      obj.id = this.maxId++;
-      this.data.push(obj);
+      values = [addingObj.value];
+      addingObj.id = this.maxId++;
+      this.data.push(addingObj);
       // this.simulation.loop.nodes.push(obj);
     }
 
     this.colorProvider.setColorScheme(values);
-    return obj;
+    return addingObj;
   }
 
   generateRandomValue(n = 100, fractionDigits = 1): number {
@@ -121,12 +131,7 @@ export class NodeHandler implements DrawableHandler<SimulationNode> {
     // }
   }
 
-  clear(): void {
-    this.data = [];
-    // todo repaint()
-  }
-
-  generateNodes(n: number, onClick: (nodeInfo: SimulationNode) => void): SimulationNode[] {
+  generateNodes(n: number): SimulationNode[] {
     const nodes: SimulationNode[] = [];
     for (let i = 0; i < n; ++i) {
       const rand = this.generateRandomValue(n);
@@ -137,9 +142,10 @@ export class NodeHandler implements DrawableHandler<SimulationNode> {
       const node = new SimulationNode(rand, this.maxId++, 0, 0);
       nodes.push(node);
     }
-    nodes.forEach(c => {
-      c.onClick = onClick;
-    });
     return nodes;
+  }
+
+  reset(): void {
+    this.data = [];
   }
 }

@@ -1,16 +1,36 @@
 import {CstParser} from 'chevrotain';
 import * as visLexer from './vis-lexer';
 
-export class VisParser extends CstParser {
+class VisParser extends CstParser {
   constructor() {
     super(visLexer.allTokens);
     this.performSelfAnalysis();
   }
 
+  public program = this.RULE('program', () => {
+    this.SUBRULE(this.setSection);
+    this.SUBRULE(this.playSection);
+    this.SUBRULE(this.textSection);
+  });
+
   public setSection = this.RULE('setSection', () => {
     this.CONSUME(visLexer.set);
     this.CONSUME(visLexer.lCurly);
     this.AT_LEAST_ONE({DEF: () => this.statement});
+    this.CONSUME(visLexer.rCurly);
+  });
+
+  public playSection = this.RULE('playSection', () => {
+    this.CONSUME(visLexer.set);
+    this.CONSUME(visLexer.lCurly);
+    this.AT_LEAST_ONE({DEF: () => this.SUBRULE(this.statement)});
+    this.CONSUME(visLexer.rCurly);
+  });
+
+  public textSection = this.RULE('textSection', () => {
+    this.CONSUME(visLexer.set);
+    this.CONSUME(visLexer.lCurly);
+    this.CONSUME(visLexer.template);
     this.CONSUME(visLexer.rCurly);
   });
 
@@ -95,3 +115,7 @@ export class VisParser extends CstParser {
   });
 
 }
+
+const visParser = new VisParser();
+
+export default visParser;

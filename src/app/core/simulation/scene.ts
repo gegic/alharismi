@@ -1,15 +1,18 @@
+import {Simulation} from './simulation';
+import {play} from '../vis-grammar/vis-lexer';
+
 export class Scene {
-  content: string;
-  focus?: string;
-  focusTimer?: number;
-  script: (() => void) | null;
-  isFirst = true;
-  isLast = true;
+  id: number;
+  setupPath: string;
+  isFirst: boolean;
+  isLast: boolean;
 
-  played: 'not_played' | 'playing' | 'played' = 'not_played';
-  set = true;
+  played: 'not_played' | 'playing' | 'played' | 'unplayable' = 'not_played';
+  set = false;
 
-  constructor(jsonScene: {content?: string, scriptPath: string}) {
-    this.content = jsonScene.content;
+  setup(simulation: Simulation): void {}
+  play(simulation: Simulation): void {}
+  content(): string {
+    return '';
   }
 }

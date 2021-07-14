@@ -3,8 +3,9 @@ import {BstCell} from './bst-cell';
 import {SimulationNode} from '../../basics/simulation-node';
 import {SimulationNodeDatum} from 'd3-force';
 import {LinkHelper} from '../../helpers/link-helper';
+import {Drawable} from '../../drawable';
 
-export class SimulationGraph implements SimulationNodeDatum {
+export class SimulationGraph implements SimulationNodeDatum, Drawable {
   id: number;
 
   x: number;

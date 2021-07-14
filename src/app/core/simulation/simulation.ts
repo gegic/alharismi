@@ -34,6 +34,7 @@ import {LinkedList} from './structures/tree/linked-list/linked-list';
 import {LinkedListHandler} from './handlers/linked-list-handler';
 import {LinkedListDrawing} from './helpers/drawing/linked-list-drawing';
 import {LinkedListMouse} from './helpers/mouse/linked-list-mouse';
+import {ObjectFactory} from './object-factory';
 
 export class Simulation {
 
@@ -46,6 +47,7 @@ export class Simulation {
   bstHandler?: BinarySearchTreeHandler;
   heapHandler?: HeapHandler;
   linkedListHandler?: LinkedListHandler;
+  objectFactory?: ObjectFactory;
   camera?: Camera;
 
   constructor(canvas: d3.Selection<any, any, d3.BaseType, any>) {
@@ -72,6 +74,8 @@ export class Simulation {
       this,
       colorProvider
     );
+
+    this.objectFactory = new ObjectFactory();
 
     const arrayDrawing = new ArrayDrawing();
     const arrayCellDrawing = new ArrayCellDrawing();
@@ -127,12 +131,8 @@ export class Simulation {
     this.loop.setHandlers(this.nodeHandler, this.bstHandler, this.heapHandler, this.linkedListHandler, this.arrayHandler);
   }
 
-  async get_level(): Promise<void> {
-    const nodes = this.nodeHandler.generateNodes(11, null);
-    const anotherNode = new SimulationNode(25, -1, 0, 0);
-    this.nodeHandler.add(nodes);
-    this.nodeHandler.add(anotherNode);
-    const arr = new SimulationArray(-1, 10, 0, 0);
-    this.arrayHandler.add(arr);
+  reset(): void {
+    this.nodeHandler.reset();
+    this.arrayHandler.reset();
   }
 }

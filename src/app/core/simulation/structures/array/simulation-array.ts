@@ -3,8 +3,9 @@ import {SimulationNode} from '../../basics/simulation-node';
 import {ArrayCell} from './array-cell';
 import {SimulationNodeDatum} from 'd3-force';
 import {Sort} from './sort';
+import {Drawable} from '../../drawable';
 
-export class SimulationArray implements SimulationNodeDatum{
+export class SimulationArray implements SimulationNodeDatum, Drawable{
 
   cellWidth = 100;
   cellHeight = 100;
@@ -131,7 +132,7 @@ export class SimulationArray implements SimulationNodeDatum{
 
   }
 
-  async insertAt(node: SimulationNode, index: number): Promise<void> {
+  async insertAt(node: SimulationNode, index: number, animate = true): Promise<void> {
     if (index >= this.data.length) {
       throw new Error('Incorrect index');
     }
@@ -143,12 +144,16 @@ export class SimulationArray implements SimulationNodeDatum{
     node.cx = this.data[index].x + this.x + this.cellWidth / 2;
     node.cy = this.data[index].y + this.y + this.cellHeight / 2;
 
-    await new Promise(r => setTimeout(r, 600));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 600));
+    }
     this.data[index].addNode(node);
-    await new Promise(r => setTimeout(r, 300));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 300));
+    }
   }
 
-  async move(index: number, forward: boolean): Promise<void> {
+  async move(index: number, forward: boolean, animate = true): Promise<void> {
     let i = forward ? this.data.length - 1 : index + 1;
     const step = forward ? 1 : -1;
 
@@ -166,9 +171,13 @@ export class SimulationArray implements SimulationNodeDatum{
 
       node.cx = this.data[i + step].x + this.x + this.cellWidth / 2;
       node.cy = this.data[i + step].y + this.y + this.cellHeight / 2;
-      await new Promise(r => setTimeout(r, 600));
+      if (animate) {
+        await new Promise(r => setTimeout(r, 600));
+      }
       this.data[i + step].addNode(node);
-      await new Promise(r => setTimeout(r, 300));
+      if (animate) {
+        await new Promise(r => setTimeout(r, 300));
+      }
     }
 
   }

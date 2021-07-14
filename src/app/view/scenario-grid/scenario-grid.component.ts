@@ -15,25 +15,12 @@ export class ScenarioGridComponent implements OnInit {
               private router: Router) { }
 
   ngOnInit(): void {
-    this.getScenarios();
-  }
-
-  getScenarios(): void {
-    this.scenarioService.getScenarios().subscribe(
-      (scenarios: Scenario[]) => {
-        this.scenarios = scenarios;
-      }
-    );
   }
 
   visualize(event: MouseEvent, scenario: Scenario): void {
     event.stopPropagation();
     this.scenarioService.currentScenario.next(scenario);
-    this.router.navigate(['visualize', scenario.path, 0]);
-  }
-
-  set scenarios(val: Scenario[]) {
-    this.scenarioService.scenarios = val;
+    this.router.navigate(['visualize', scenario.name, 0]);
   }
 
   get scenarios(): Scenario[] {

@@ -1,5 +1,5 @@
 <div class="content"
-     [innerHTML]="!scene || !scene.content ? '' : scene.content" (click)="getRoute($event)"
+     [innerHTML]="!scene ? '' : scene.content()" (click)="getRoute($event)"
      *ngIf="!showLoadingSkeleton; else contentLoadingSkeleton"
 ></div>
 <ng-template #contentLoadingSkeleton>

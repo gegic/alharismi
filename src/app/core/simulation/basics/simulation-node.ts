@@ -4,8 +4,9 @@ import {Selection} from 'd3-selection';
 import {ArrayCell} from '../structures/array/array-cell';
 import * as d3 from 'd3';
 import {BstCell} from '../structures/tree/bst-cell';
+import {Drawable} from '../drawable';
 
-export class SimulationNode implements SimulationNodeDatum {
+export class SimulationNode implements SimulationNodeDatum, Drawable {
 
   radius = 40;
   isValueVisible = true;

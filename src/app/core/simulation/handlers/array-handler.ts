@@ -13,6 +13,7 @@ import {ArrayCellDrawing} from '../helpers/drawing/array-cell-drawing';
 import {ArrayCellMouse} from '../helpers/mouse/array-cell-mouse';
 import {MouseHelper} from '../helpers/mouse/mouse-helper';
 import {Simulation} from '../simulation';
+import {Drawable} from '../drawable';
 
 export class ArrayHandler implements DrawableHandler<SimulationArray> {
 
@@ -44,7 +45,12 @@ export class ArrayHandler implements DrawableHandler<SimulationArray> {
     this.canvas = canvas;
   }
 
-  add(array: SimulationArray): void {
+  add(obj: SimulationArray | Drawable): void {
+    if (!(obj instanceof SimulationArray)) {
+      return;
+    }
+    const array = obj as SimulationArray;
+
     array.id = this.maxId++;
     this.data.push(array);
   }
@@ -95,5 +101,9 @@ export class ArrayHandler implements DrawableHandler<SimulationArray> {
 
   exit(exitElement: d3.Selection<d3.BaseType, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
     return this.drawingHelper.exit(exitElement);
+  }
+
+  reset(): void {
+    this.data = [];
   }
 }

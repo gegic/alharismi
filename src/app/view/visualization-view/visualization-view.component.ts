@@ -7,6 +7,8 @@ import {SimulationNode} from '../../core/simulation/basics/simulation-node';
 import {SimulationLink} from '../../core/simulation/basics/simulation-link';
 import {ScenarioService} from '../../core/services/scenario.service';
 import {ArrowheadHelper} from '../../core/simulation/helpers/arrowhead-helper';
+import {SceneService} from '../../core/services/scene.service';
+import {Scene} from '../../core/simulation/scene';
 @Component({
   selector: 'app-visualization-view',
   templateUrl: './visualization-view.component.html',
@@ -26,7 +28,8 @@ export class VisualizationViewComponent implements AfterViewInit {
   canvasElement: ElementRef<HTMLDivElement>;
 
   constructor(private router: Router,
-              private scenarioService: ScenarioService) { }
+              private scenarioService: ScenarioService,
+              private sceneService: SceneService) { }
 
   ngAfterViewInit(): void {
 
@@ -36,7 +39,10 @@ export class VisualizationViewComponent implements AfterViewInit {
       .attr('class', 'canvas');
     this.scenarioService.initSimulation(g);
     this.scenarioService.startSimulation(this.svg);
-    this.scenarioService.getLevel();
+    this.sceneService.scene.subscribe(scene => {
+      this.scenarioService.simulation.reset();
+      scene.setup(this.scenarioService.simulation);
+    });
   }
 
   openInPlayground(): void {

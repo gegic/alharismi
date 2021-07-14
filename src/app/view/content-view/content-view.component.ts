@@ -14,12 +14,17 @@ export class ContentViewComponent implements OnInit {
 
   private _isContentLoading: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   showLoadingSkeleton = true;
+
+  content = '';
+
   constructor(private sceneService: SceneService,
               private router: Router) { }
 
   ngOnInit(): void {
-    this._isContentLoading.pipe(debounceTime(100)).subscribe(val => {
-      this.showLoadingSkeleton = val;
+    this.sceneService.scene.pipe(debounceTime(100)).subscribe(val => {
+      this.showLoadingSkeleton = true;
+      this.content = val.content();
+      this.showLoadingSkeleton = false;
     });
   }
 

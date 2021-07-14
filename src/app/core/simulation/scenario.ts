@@ -1,17 +1,13 @@
 import {Scene} from './scene';
 export class Scenario {
   name: string;
-  path: string;
   description: string;
-  scenes: string[];
+  scenes: (typeof Scene)[];
   cover: string;
-  setup: () => void;
 
-  constructor(jsonScenario: {name: string, path: string, description: string, scenes: string[]}) {
-    this.name = jsonScenario.name;
-    this.path = jsonScenario.path;
-    this.description = jsonScenario.description;
-    this.scenes = jsonScenario.scenes;
-    this.cover = `../../scenarios/${jsonScenario.path}/cover.png`;
+  constructor(name: string, description: string) {
+    this.name = name;
+    this.description = description;
+    this.cover = `../../scenarios/${name}/cover.png`;
   }
 }
