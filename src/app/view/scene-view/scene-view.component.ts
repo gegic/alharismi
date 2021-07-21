@@ -14,9 +14,9 @@ import {Scene} from '../../core/simulation/scene';
 })
 export class SceneViewComponent implements OnInit {
 
-  isSceneLoading = true;
+  isContentLoading = true;
 
-  scenarioName: string;
+  scenarioPath: string;
   sceneIndex: number;
 
   constructor(private scenarioService: ScenarioService,
@@ -26,11 +26,11 @@ export class SceneViewComponent implements OnInit {
 
   ngOnInit(): void {
     this.activatedRoute.params.subscribe(val => {
-      this.isSceneLoading = true;
+      this.isContentLoading = true;
       if (!val.path || !val.sceneIndex) {
         this.router.navigate(['']);
       }
-      this.scenarioName = val.path;
+      this.scenarioPath = val.path;
       this.sceneIndex = parseInt(val.sceneIndex, 10);
       this.prepareScene();
     });
@@ -39,19 +39,19 @@ export class SceneViewComponent implements OnInit {
   prepareScene(): void {
 
     if (!this.scenarioService.currentScenario.getValue()) {
-      const scenario = this.scenarioService.scenarios.find(sc => sc.name === this.scenarioName);
+      const scenario = this.scenarioService.scenarios.find(sc => sc.path === this.scenarioPath);
       if (!!scenario && scenario.scenes.length < 1) {
         this.router.navigate(['']);
       }
       this.scenarioService.currentScenario.next(scenario);
     }
-    console.log(this.sceneIndex);
     const sceneClass = this.scenes[this.sceneIndex];
     const scene = new sceneClass();
     scene.isFirst = this.sceneIndex === 0;
     scene.isLast = this.sceneIndex === this.scenes.length - 1;
     this.sceneService.scene.next(scene);
-    this.isSceneLoading = false;
+
+    this.isContentLoading = false;
   }
 
   showNext(): void {
@@ -73,6 +73,7 @@ export class SceneViewComponent implements OnInit {
   get scenes(): (typeof Scene)[] {
     return this.scenarioService.currentScenario.getValue().scenes;
   }
+
   get scene(): Scene | undefined {
     return this.sceneService.scene.getValue();
   }

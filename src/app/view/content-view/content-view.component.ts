@@ -4,6 +4,7 @@ import {SceneService} from '../../core/services/scene.service';
 import {Scene} from '../../core/simulation/scene';
 import {BehaviorSubject} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 
 @Component({
   selector: 'app-content-view',
@@ -15,15 +16,13 @@ export class ContentViewComponent implements OnInit {
   private _isContentLoading: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   showLoadingSkeleton = true;
 
-  content = '';
-
   constructor(private sceneService: SceneService,
-              private router: Router) { }
+              private router: Router,
+              private sanitizer: DomSanitizer) { }
 
   ngOnInit(): void {
     this.sceneService.scene.pipe(debounceTime(100)).subscribe(val => {
       this.showLoadingSkeleton = true;
-      this.content = val.content();
       this.showLoadingSkeleton = false;
     });
   }
@@ -35,6 +34,21 @@ export class ContentViewComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
   }
+
+  get content(): SafeHtml {
+    if (!this.scene) {
+      return '';
+    }
+    return this.sanitizer.bypassSecurityTrustHtml(this.scene.content());
+  }
+
+  get successContent(): SafeHtml {
+    if (!this.scene) {
+      return '';
+    }
+    return this.sanitizer.bypassSecurityTrustHtml(this.scene.successContent());
+  }
+
 
   get scene(): Scene | undefined {
     return this.sceneService.scene.getValue();

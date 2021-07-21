@@ -104,6 +104,7 @@ export class ArrayHandler implements DrawableHandler<SimulationArray> {
   }
 
   reset(): void {
+    this.maxId = 0;
     this.data = [];
   }
 }

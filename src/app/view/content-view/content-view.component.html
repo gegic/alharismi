@@ -1,7 +1,15 @@
-<div class="content"
-     [innerHTML]="!scene ? '' : scene.content()" (click)="getRoute($event)"
-     *ngIf="!showLoadingSkeleton; else contentLoadingSkeleton"
-></div>
+<div *ngIf="!showLoadingSkeleton; else contentLoadingSkeleton">
+  <p-scrollPanel [style]="{width: '100%', height: '84vh'}">
+    <div class="content"
+         [innerHTML]="content"
+         (click)="getRoute($event)"
+    ></div>
+    <div class="success-content" *ngIf="scene.played === 'played'">
+      Explanation <i class="p-ml-2 pi pi-info-circle"></i>
+      <div [innerHTML]="successContent"></div>
+    </div>
+  </p-scrollPanel>
+</div>
 <ng-template #contentLoadingSkeleton>
   <div class="content">
     <p-skeleton width="70%" height="2.5rem" styleClass="p-mt-4 p-mb-4"></p-skeleton>

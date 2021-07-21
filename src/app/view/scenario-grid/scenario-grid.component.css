@@ -37,6 +37,14 @@
   opacity: 1;
 }
 
+::ng-deep .clickable-card .p-card-content {
+  height: 10vh;
+}
+
+::ng-deep .soon-card .p-card-content {
+  height: 10vh;
+}
+
 ::ng-deep .p-card-content {
   padding: 0 !important;
 }

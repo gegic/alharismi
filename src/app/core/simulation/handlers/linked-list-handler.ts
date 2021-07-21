@@ -122,5 +122,10 @@ export class LinkedListHandler implements DrawableHandler<LinkedList> {
   exit(exitElement: d3.Selection<d3.BaseType, LinkedList, any, any>): d3.Selection<d3.BaseType, LinkedList, any, any> {
     return this.drawingHelper.exit(exitElement);
   }
+  reset(): void {
+    this.maxId = 0;
+    this.data = [];
+  }
+
 
 }

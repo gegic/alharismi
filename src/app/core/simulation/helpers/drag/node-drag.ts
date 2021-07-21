@@ -113,6 +113,11 @@ export class NodeDrag implements DragHelper<SimulationNode> {
   }
 
   addDragInteraction(element: d3.Selection<d3.BaseType, SimulationNode, any, any>): d3.Selection<d3.BaseType, SimulationNode, any, any> {
+
+    if (!this.simulation.interactable) {
+      return element;
+    }
+
     const drag = d3.drag<Element, SimulationNode, unknown>()
       .on('start', (d: SimulationNode, i: number, nodes: Element[] | ArrayLike<Element>) => this.dragStart(d, i, nodes))
       .on('drag', (d: SimulationNode, i: number, nodes: Element[] | ArrayLike<Element>) => this.dragging(d, i, nodes))

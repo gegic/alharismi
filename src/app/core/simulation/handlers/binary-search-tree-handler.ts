@@ -124,4 +124,9 @@ export class BinarySearchTreeHandler implements DrawableHandler<BinarySearchTree
     return this.drawingHelper.exit(exitElement);
   }
 
+  reset(): void {
+    this.maxId = 0;
+    this.data = [];
+  }
+
 }

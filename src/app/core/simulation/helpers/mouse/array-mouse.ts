@@ -66,7 +66,7 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
             alert('Value invalid');
             return;
           }
-          await arr.linearFindElement(parsed);
+          await arr.linearSearch(parsed);
         }
       },
       {
@@ -143,6 +143,11 @@ export class ArrayMouse implements MouseHelper<SimulationArray> {
   }
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, SimulationArray, any, any>): d3.Selection<d3.BaseType, SimulationArray, any, any> {
+    if (!this.simulation.interactable) {
+      return element;
+    }
+
+
     element
       // .on('mouseover', (d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, arrays))
       // .on('mouseout', (d: SimulationArray, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, arrays))

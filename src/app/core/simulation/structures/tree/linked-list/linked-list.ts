@@ -56,7 +56,7 @@ export class LinkedList extends SimulationGraph {
     this.alignForces();
   }
 
-  async popFirst(): Promise<void> {
+  async popFirst(animate = true): Promise<void> {
     const head = this.getHead();
     const toDelete = this.getSuccessor(head);
     if (toDelete.id === -2) {
@@ -68,7 +68,7 @@ export class LinkedList extends SimulationGraph {
     this.alignForces();
   }
 
-  async popLast(): Promise<void> {
+  async popLast(animate = true): Promise<void> {
     const tail = this.getTail();
     const toDelete = this.getPredecessor(tail);
     if (toDelete.id === -2) {
@@ -76,12 +76,12 @@ export class LinkedList extends SimulationGraph {
     }
     const node = toDelete.removeNode();
     node.setTarget(this.x, this.y - 200);
-    const predecessor = await this.findPredecessor(toDelete);
+    const predecessor = await this.findPredecessor(toDelete, animate);
     await this.deleteCell(toDelete, predecessor);
     this.alignForces();
   }
 
-  async delete(index: number): Promise<void> {
+  async delete(index: number, animate = true): Promise<void> {
     if (index > this.data.length - 2 || index < 0) {
       throw new Error('Invalid index');
     }
@@ -93,7 +93,9 @@ export class LinkedList extends SimulationGraph {
         predecessor.highlight('#98dc73');
       }
       cell.highlight('#FF5A5A94');
-      await new Promise(r => setTimeout(r, 600));
+      if (animate) {
+        await new Promise(r => setTimeout(r, 600));
+      }
       if (predecessor) {
         predecessor.resetColor();
       }
@@ -110,7 +112,9 @@ export class LinkedList extends SimulationGraph {
     }
     const node = cell.removeNode();
     node.setTarget(this.x, this.y - 200);
-    await new Promise(r => setTimeout(r, 600));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 600));
+    }
     predecessor.resetColor();
     await this.deleteCell(cell, predecessor);
     this.alignForces();
@@ -146,21 +150,25 @@ export class LinkedList extends SimulationGraph {
     }
   }
 
-  async prepend(d: SimulationNode): Promise<void> {
+  async prepend(d: SimulationNode, animate = true): Promise<void> {
     const head = this.getHead();
     d.setTarget(head.x, head.y);
-    await new Promise(r => setTimeout(r, 600));
-    await this.addToHead(d, head);
+    if (animate) {
+      await new Promise(r => setTimeout(r, 600));
+    }
+    await this.addToHead(d, head, animate);
   }
 
-  async append(d: SimulationNode): Promise<void> {
+  async append(d: SimulationNode, animate = true): Promise<void> {
     const tail = this.getTail();
     d.setTarget(tail.x, tail.y);
-    await new Promise(r => setTimeout(r, 600));
-    await this.addToTail(d, tail);
+    if (animate) {
+      await new Promise(r => setTimeout(r, 600));
+    }
+    await this.addToTail(d, tail, animate);
   }
 
-  async insert(d: SimulationNode, index: number): Promise<void> {
+  async insert(d: SimulationNode, index: number, animate = true): Promise<void> {
     if (index > this.data.length - 2 || index < 0) {
       throw new Error('Invalid index');
     }
@@ -168,18 +176,26 @@ export class LinkedList extends SimulationGraph {
     for (let i = 0; i < index; ++i) {
       startingCell.highlight('#98dc73');
       d.setTarget(startingCell.x, startingCell.y - 200);
-      await new Promise(r => setTimeout(r, 600));
+      if (animate) {
+        await new Promise(r => setTimeout(r, 600));
+      }
       startingCell.resetColor();
       startingCell = this.getSuccessor(startingCell);
-      await new Promise(r => setTimeout(r, 600));
+      if (animate) {
+        await new Promise(r => setTimeout(r, 600));
+      }
     }
 
     startingCell.highlight('#98dc73');
     d.setTarget(startingCell.x + this.linkDistance / 2, startingCell.y - 60);
-    await new Promise(r => setTimeout(r, 600));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 600));
+    }
     startingCell.resetColor();
     const newCell = new BstCell(this, this.maxId++, startingCell.x, startingCell.y);
-    await new Promise(r => setTimeout(r, 300));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 300));
+    }
     await this.addCell(newCell, startingCell);
     newCell.setNode(d);
   }
@@ -192,34 +208,40 @@ export class LinkedList extends SimulationGraph {
     }
   }
 
-  async addToHead(d: SimulationNode, headCell: BstCell): Promise<void> {
+  async addToHead(d: SimulationNode, headCell: BstCell, animate = true): Promise<void> {
     headCell.setNode(d);
     d.lockedPlaceholder = headCell;
     let nextCell = new BstCell(this, this.maxId++, headCell.x, headCell.y);
     this.addCell(nextCell, headCell);
     this.alignForces();
-    await new Promise(r => setTimeout(r, 300));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 300));
+    }
     nextCell = this.getSuccessor(headCell);
-    await this.passNode(d, headCell, nextCell);
+    await this.passNode(d, headCell, nextCell, animate);
   }
 
-  async addToTail(d: SimulationNode, tailCell: BstCell): Promise<void> {
+  async addToTail(d: SimulationNode, tailCell: BstCell, animate = true): Promise<void> {
     tailCell.setNode(d);
     d.lockedPlaceholder = tailCell;
     const predecessor = this.getPredecessor(tailCell);
     let previousCell = new BstCell(this, this.maxId++, tailCell.x, tailCell.y);
     this.addCell(previousCell, predecessor);
     this.alignForces();
-    await new Promise(r => setTimeout(r, 300));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 300));
+    }
     previousCell = this.getPredecessor(tailCell);
-    await this.passNode(d, tailCell, previousCell);
+    await this.passNode(d, tailCell, previousCell, animate);
   }
 
-  async passNode(d: SimulationNode, source: BstCell, target: BstCell): Promise<void> {
+  async passNode(d: SimulationNode, source: BstCell, target: BstCell, animate = true): Promise<void> {
     d = source.removeNode();
     d.setTarget(source.x, source.y - 100);
     d.setTarget(target.x, target.y);
-    await new Promise(r => setTimeout(r, 600));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 600));
+    }
     target.setNode(d);
     d.lockedPlaceholder = target;
   }
@@ -265,13 +287,15 @@ export class LinkedList extends SimulationGraph {
     return this.data.find((c: BstCell) => c.id === successorId);
   }
 
-  async findPredecessor(cell: BstCell): Promise<BstCell | undefined> {
+  async findPredecessor(cell: BstCell, animate = true): Promise<BstCell | undefined> {
     if (cell.id === -1) {
       return undefined;
     } else if (this.double || cell.id === -2) {
       const pred = this.getPredecessor(cell);
       pred.highlight('#98dc73');
-      await new Promise(r => setTimeout(r, 600));
+      if (animate) {
+        await new Promise(r => setTimeout(r, 600));
+      }
       pred.resetColor();
       return pred;
     }
@@ -279,7 +303,9 @@ export class LinkedList extends SimulationGraph {
     while (predecessor) {
       const potentialCell = this.getSuccessor(predecessor);
       predecessor.highlight('#98dc73');
-      await new Promise(r => setTimeout(r, 600));
+      if (animate) {
+        await new Promise(r => setTimeout(r, 600));
+      }
       predecessor.resetColor();
 
       if (potentialCell.id === cell.id) {

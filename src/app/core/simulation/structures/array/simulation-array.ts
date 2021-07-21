@@ -24,18 +24,17 @@ export class SimulationArray implements SimulationNodeDatum, Drawable{
   sorted = false;
   busy = false;
 
-  constructor(id: number, size: number, x: number, y: number, descriptor?: string){
+  constructor(id: number, x: number, y: number, descriptor?: string){
     this.id = id;
     this.cellWidth = 100;
     this.cellWidth = 100;
     this.data = [];
-    this.x = x - (size * this.cellWidth) / 2;
-    this.y = y - (this.cellHeight / 2);
     this.z = -2;
     this.color = 'black';
+    this.x = x;
+    this.y = y;
     this.isStatic = false;
     this.descriptor = descriptor ?? `array${id}`;
-    this.setCapacity(size);
   }
 
   add(nodes: SimulationNode[]): void {
@@ -76,7 +75,6 @@ export class SimulationArray implements SimulationNodeDatum, Drawable{
 
   setCapacity(size: number): void {
     this.capacity = size;
-
     if (size < this.data.length) {
       for (let i = size ; i < this.data.length; i++)
       {
@@ -92,28 +90,66 @@ export class SimulationArray implements SimulationNodeDatum, Drawable{
     }
   }
 
-  async linearFindElement(value: number): Promise<void> {
+  async linearSearch(value: number): Promise<void> {
     for (let i = 0; i < this.capacity; ++i) {
       const cell = this.data[i];
       if (!cell.node) {
         continue;
       }
 
-      cell.node.drawArrow = true;
-      cell.node.isValueVisible = true;
-
+      cell.highlight('#fdd828');
       await new Promise(r => setTimeout(r, 600));
-
-      cell.node.drawArrow = false;
+      cell.resetColor();
 
       if (cell.node.value === value) {
+        cell.highlight('#28fd5d');
         cell.node.highlighted = true;
         await new Promise(r => setTimeout(r, 1000));
+        cell.resetColor();
         cell.node.highlighted = false;
         return;
       }
     }
 
+    await new Promise(r => setTimeout(r, 300));
+    throw new Error('Element not found');
+  }
+
+  async binarySearch(value: number): Promise<void> {
+    if (!this.sorted) {
+      throw new Error('Array is not sorted');
+    }
+    let low = 0;
+    let high = this.size - 1;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const midCell = this.data[mid];
+      const lowCell = this.data[low];
+      const highCell = this.data[high];
+
+      midCell.highlight('#fdd828');
+      if (low !== high) {
+        lowCell.highlight('#48fd28');
+        highCell.highlight('#fd2828');
+      }
+      await new Promise(r => setTimeout(r, 1000));
+      midCell.resetColor();
+      lowCell.resetColor();
+      highCell.resetColor();
+
+      if (value === midCell.node.value) {
+        midCell.highlight('#fdd828');
+        midCell.node.highlighted = true;
+        await new Promise(r => setTimeout(r, 1000));
+        midCell.resetColor();
+        midCell.node.highlighted = false;
+        return;
+      } else if (value > midCell.node.value) {
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
     await new Promise(r => setTimeout(r, 300));
     throw new Error('Element not found');
   }
@@ -138,7 +174,7 @@ export class SimulationArray implements SimulationNodeDatum, Drawable{
     }
 
     if (!!this.data[index].node) {
-      await this.move(index, true);
+      await this.move(index, true, animate);
     }
 
     node.cx = this.data[index].x + this.x + this.cellWidth / 2;

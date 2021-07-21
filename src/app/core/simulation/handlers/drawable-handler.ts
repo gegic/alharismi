@@ -15,4 +15,7 @@ export interface DrawableHandler<SimulationObject> {
   canvas: Selection<any, any, any, any>;
 
   draw(): void;
+
+  reset(): void;
+
 }

@@ -15,4 +15,7 @@ export class Scene {
   content(): string {
     return '';
   }
+  successContent(): string {
+    return '';
+  }
 }

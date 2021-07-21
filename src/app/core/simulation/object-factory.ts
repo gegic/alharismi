@@ -7,8 +7,10 @@ import {RedBlackTree} from './structures/tree/binary-tree/red-black-tree/red-bla
 import {Heap} from './structures/tree/binary-tree/heap/heap';
 import {LinkedList} from './structures/tree/linked-list/linked-list';
 
+type objectType = 'node' | 'array' | 'bst' | 'avl' | 'rb' | 'heap' | 'singlyLinkedList';
+
 export class ObjectFactory {
-  create(type: string, x: number, y: number, value?: number): Drawable {
+  create(type: objectType, x: number, y: number, value?: number): Drawable {
     switch (type.toLowerCase()) {
       case 'node':
         return this.createNode(x, y, value);
@@ -22,7 +24,7 @@ export class ObjectFactory {
         return this.createRb(x, y);
       case 'heap':
         return this.createHeap(x, y);
-      case 'singlyLinkedList':
+      case 'singlylinkedlist':
         return this.createSinglyLinkedList(x, y);
     }
   }
@@ -32,7 +34,9 @@ export class ObjectFactory {
   }
 
   private createArray(x: number, y: number, value?: number): SimulationArray {
-    return new SimulationArray(-1, value ?? 10, x, y);
+    const arr = new SimulationArray(-1, x, y);
+    arr.setCapacity(value ?? 10);
+    return arr;
   }
 
   private createBst(x: number, y: number): BinarySearchTree {

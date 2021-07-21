@@ -53,6 +53,11 @@ export class ArrayCellMouse implements MouseHelper<ArrayCell> {
   }
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, ArrayCell, any, any>): d3.Selection<d3.BaseType, ArrayCell, any, any> {
+    if (!this.simulation.interactable) {
+      return element;
+    }
+
+
     element
       .on('mouseover', (d: ArrayCell, i: number, cells: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, cells))
       .on('mouseout', (d: ArrayCell, i: number, cells: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, cells));

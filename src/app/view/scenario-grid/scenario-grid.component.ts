@@ -20,7 +20,7 @@ export class ScenarioGridComponent implements OnInit {
   visualize(event: MouseEvent, scenario: Scenario): void {
     event.stopPropagation();
     this.scenarioService.currentScenario.next(scenario);
-    this.router.navigate(['visualize', scenario.name, 0]);
+    this.router.navigate(['visualize', scenario.path, 0]);
   }
 
   get scenarios(): Scenario[] {

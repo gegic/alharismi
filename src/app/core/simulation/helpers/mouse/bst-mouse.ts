@@ -98,6 +98,11 @@ export class BstMouse implements MouseHelper<BinarySearchTree> {
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, BinarySearchTree, any, any>):
     d3.Selection<d3.BaseType, BinarySearchTree, any, any> {
+
+    if (!this.simulation.interactable) {
+      return element;
+    }
+
     element
       // .on('mouseover', (d: BinarySearchTree, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, arrays))
       // .on('mouseout', (d: BinarySearchTree, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, arrays))

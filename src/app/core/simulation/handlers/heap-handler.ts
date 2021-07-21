@@ -123,4 +123,9 @@ export class HeapHandler implements DrawableHandler<Heap> {
     return this.drawingHelper.exit(exitElement);
   }
 
+  reset(): void {
+    this.maxId = 0;
+    this.data = [];
+  }
+
 }

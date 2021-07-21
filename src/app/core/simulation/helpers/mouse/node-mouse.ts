@@ -81,6 +81,11 @@ export class NodeMouse implements MouseHelper<SimulationNode> {
   }
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, SimulationNode, any, any>): d3.Selection<d3.BaseType, SimulationNode, any, any> {
+
+    if (!this.simulation.interactable) {
+      return element;
+    }
+
     element.on('mouseover', (d: SimulationNode, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, nodes))
       .on('mouseout', (d: SimulationNode, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, nodes))
       .on('contextmenu', (d: SimulationNode, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.contextMenu(d, i, nodes));

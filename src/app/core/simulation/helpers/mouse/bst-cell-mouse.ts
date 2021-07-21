@@ -84,6 +84,11 @@ export class BstCellMouse implements MouseHelper<BstCell> {
   }
 
   addMouseInteraction(element: d3.Selection<d3.BaseType, BstCell, any, any>): d3.Selection<d3.BaseType, BstCell, any, any> {
+
+    if (!this.simulation.interactable) {
+      return element;
+    }
+
     element
       .on('mouseover', (d: BstCell, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, nodes))
       .on('mouseout', (d: BstCell, i: number, nodes: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, nodes));

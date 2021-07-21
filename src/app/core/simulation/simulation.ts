@@ -1,4 +1,3 @@
-import {DataHandler} from './handlers/data-handler';
 import {NodeHandler} from './handlers/node-handler';
 import {ArrayHandler} from './handlers/array-handler';
 import {Camera} from '../camera';
@@ -49,6 +48,9 @@ export class Simulation {
   linkedListHandler?: LinkedListHandler;
   objectFactory?: ObjectFactory;
   camera?: Camera;
+  widthHeight: BehaviorSubject<[number, number]> = new BehaviorSubject([0, 0]);
+
+  interactable = true;
 
   constructor(canvas: d3.Selection<any, any, d3.BaseType, any>) {
     this.canvas = canvas;
@@ -58,9 +60,13 @@ export class Simulation {
     this.loop = new SimulationLoop();
     this.loop.setupForce();
 
-    this.camera = new Camera(this.canvas);
+    this.camera = new Camera(svg, this.canvas, this.widthHeight.getValue());
 
-    this.camera.setZoom(svg);
+    this.widthHeight.subscribe(val => {
+      this.camera.widthHeight.next(val);
+    });
+
+    this.camera.setZoom();
     const colorProvider = new ColorProvider();
     const nodeDrawing = new NodeDrawing(colorProvider);
     const nodeDrag = new NodeDrag(this);
@@ -79,7 +85,7 @@ export class Simulation {
 
     const arrayDrawing = new ArrayDrawing();
     const arrayCellDrawing = new ArrayCellDrawing();
-    const arrayDrag = new ArrayDrag();
+    const arrayDrag = new ArrayDrag(this);
     const arrayMouse = new ArrayMouse(this);
     const arrayCellMouse = new ArrayCellMouse(this);
     this.arrayHandler = new ArrayHandler(
@@ -132,7 +138,6 @@ export class Simulation {
   }
 
   reset(): void {
-    this.nodeHandler.reset();
-    this.arrayHandler.reset();
+    this.loop.drawableHandlers.forEach(h => h.reset());
   }
 }

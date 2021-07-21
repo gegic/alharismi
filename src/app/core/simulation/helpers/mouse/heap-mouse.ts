@@ -96,8 +96,12 @@ export class HeapMouse implements MouseHelper<Heap> {
     contextMenu(menu)(d, i);
   }
 
-  addMouseInteraction(element: d3.Selection<d3.BaseType, Heap, any, any>):
-    d3.Selection<d3.BaseType, Heap, any, any> {
+  addMouseInteraction(element: d3.Selection<d3.BaseType, Heap, any, any>): d3.Selection<d3.BaseType, Heap, any, any> {
+
+    if (!this.simulation.interactable) {
+      return element;
+    }
+
     element
       // .on('mouseover', (d: Heap, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, arrays))
       // .on('mouseout', (d: Heap, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, arrays))

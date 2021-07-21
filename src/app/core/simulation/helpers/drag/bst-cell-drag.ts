@@ -39,6 +39,11 @@ export class BstCellDrag implements DragHelper<BstCell> {
   }
 
   addDragInteraction(element: d3.Selection<d3.BaseType, BstCell, any, any>): d3.Selection<d3.BaseType, BstCell, any, any> {
+
+    if (!this.simulation.interactable) {
+      return element;
+    }
+
     const drag = d3.drag<Element, BstCell, unknown>()
       .on('start', (d: BstCell, i: number, cells: Element[] | ArrayLike<Element>) => this.dragStart(d, i, cells))
       .on('drag', (d: BstCell, i: number, cells: Element[] | ArrayLike<Element>) => this.dragging(d, i, cells))

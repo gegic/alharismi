@@ -134,18 +134,19 @@ export class NodeHandler implements DrawableHandler<SimulationNode> {
   generateNodes(n: number): SimulationNode[] {
     const nodes: SimulationNode[] = [];
     for (let i = 0; i < n; ++i) {
-      const rand = this.generateRandomValue(n);
-      if (nodes.some(d => d.value === rand)) {
-        continue;
+      let rand = this.generateRandomValue(10);
+      while (nodes.some(d => d.value === rand)) {
+        rand = this.generateRandomValue(100);
       }
       // const pos = this.positionHelper.createRandomPointOnCircumference([0, 0], 1);
-      const node = new SimulationNode(rand, this.maxId++, 0, 0);
+      const node = new SimulationNode(rand, -1, 0, 0);
       nodes.push(node);
     }
     return nodes;
   }
 
   reset(): void {
+    this.maxId = 0;
     this.data = [];
   }
 }

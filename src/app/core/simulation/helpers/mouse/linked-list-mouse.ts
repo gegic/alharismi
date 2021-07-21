@@ -103,8 +103,12 @@ export class LinkedListMouse implements MouseHelper<LinkedList> {
     contextMenu(menu)(d, i);
   }
 
-  addMouseInteraction(element: d3.Selection<d3.BaseType, LinkedList, any, any>):
-    d3.Selection<d3.BaseType, LinkedList, any, any> {
+  addMouseInteraction(element: d3.Selection<d3.BaseType, LinkedList, any, any>): d3.Selection<d3.BaseType, LinkedList, any, any> {
+
+    if (!this.simulation.interactable) {
+      return element;
+    }
+
     element
       // .on('mouseover', (d: LinkedList, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOver(d, i, arrays))
       // .on('mouseout', (d: LinkedList, i: number, arrays: d3Element[] | ArrayLike<d3Element>) => this.mouseOut(d, i, arrays))
