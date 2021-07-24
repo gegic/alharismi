@@ -100,10 +100,8 @@ export class LinkedList extends SimulationGraph {
         predecessor.resetColor();
       }
       cell.resetColor();
+      predecessor = cell;
       cell = this.getSuccessor(cell);
-      if (this.double) {
-        predecessor = cell;
-      }
     }
 
     if (this.double) {
@@ -121,6 +119,7 @@ export class LinkedList extends SimulationGraph {
   }
 
   async deleteCell(cell: BstCell, predecessor: BstCell): Promise<void> {
+    console.log(`predecessor ${predecessor.node.value}`);
     const deletionIndex = this.data.findIndex(c => c.id === cell.id);
     this.data.splice(deletionIndex, 1);
     const successor = this.getSuccessor(cell);

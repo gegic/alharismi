@@ -3,6 +3,23 @@
   color: white;
 }
 
+::ng-deep .content a {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  background-color: #363636;
+  padding: .2rem;
+  border-radius: .3rem;
+}
+
+::ng-deep .content a::after {
+  margin-left: .3rem;
+  margin-right: .1rem;
+  font-family: 'primeicons', serif;
+  content: '\e93c';
+  font-size: .7em;
+}
+
 .success-content {
   margin-top: 1rem;
   margin-left: 2rem;

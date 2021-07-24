@@ -15,7 +15,6 @@ type JsonScene = {contentPath: string, setupPath: string, playPath: string, cont
 export class SceneService {
 
   scene: BehaviorSubject<Scene | undefined> = new BehaviorSubject<Scene | undefined>(undefined);
-
-  constructor(private httpClient: HttpClient) { }
-
+  played: BehaviorSubject<string> = new BehaviorSubject('not_played');
+  set: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 }

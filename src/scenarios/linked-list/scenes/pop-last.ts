@@ -39,7 +39,7 @@ export class PopLast implements Scene {
 
   content(): string {
     return `
-  <h1 class="scene-title">Linked list - pop first node</h1>
+  <h1 class="scene-title">Linked list - pop the last node</h1>
   <p>
     In order to remove the element which is placed at the end of a linked list,
     the process is quite complicated.

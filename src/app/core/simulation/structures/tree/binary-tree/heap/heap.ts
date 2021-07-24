@@ -17,16 +17,17 @@ export class Heap extends BinaryTree {
     this.setCell(cell, ++this.size);
   }
 
-  async add(d: SimulationNode, bstCell: BstCell): Promise<void> {
+  async add(d: SimulationNode, bstCell: BstCell, animate = true): Promise<void> {
     bstCell.setNode(d);
     d.lockedPlaceholder = bstCell;
 
     this.addNextCell(bstCell);
     this.alignForces();
+    if (animate) {
+      await new Promise(r => setTimeout(r, 600));
+    }
 
-    await new Promise(r => setTimeout(r, 600));
-
-    await this.upHeap(bstCell, this.size - 2);
+    await this.upHeap(bstCell, this.size - 2, animate);
 
   }
 
@@ -40,12 +41,12 @@ export class Heap extends BinaryTree {
     }
   }
 
-  async upHeap(cell: BstCell, index: number): Promise<void> {
+  async upHeap(cell: BstCell, index: number, animate = true): Promise<void> {
     let [parent] = this.getParent(cell, index);
     const root = this.getRoot();
     while (cell !== root) {
       if (cell.node.value < parent.node.value) {
-        await this.swapNodes(cell, parent);
+        await this.swapNodes(cell, parent, animate);
       }
       cell = parent;
       index = Math.floor(index / 2);
@@ -63,15 +64,17 @@ export class Heap extends BinaryTree {
     return [node, min, deletedCell];
   }
 
-  async delete(value: number): Promise<[SimulationNode, (BstCell | null), BstCell]> {
+  async delete(value: number, animate = true): Promise<[SimulationNode, (BstCell | null), BstCell]> {
     for (const cell of this._data) {
       if (!cell.node) {
         continue;
       }
       const checkingNode = cell.node;
-      checkingNode.drawArrow = true;
-      await new Promise(r => setTimeout(r, 600));
-      checkingNode.drawArrow = false;
+      if (animate) {
+        checkingNode.drawArrow = true;
+        await new Promise(r => setTimeout(r, 600));
+        checkingNode.drawArrow = false;
+      }
       if (checkingNode.value === value) {
         const deleted = await this.deleteNodeFromCell(cell);
         return [checkingNode, cell, deleted];
@@ -80,7 +83,7 @@ export class Heap extends BinaryTree {
     return [null, null, null];
   }
 
-  async deleteNodeFromCell(cell: BstCell): Promise<BstCell | null> {
+  async deleteNodeFromCell(cell: BstCell, animate = true): Promise<BstCell | null> {
     if (!cell.node) {
       return null;
     }
@@ -93,46 +96,60 @@ export class Heap extends BinaryTree {
       return lastCell;
     }
     await this.swapNodes(cell, lastTakenCell);
-    lastTakenCell.removeNode();
+    const removed = lastTakenCell.removeNode();
+    if (animate) {
+      removed.setTarget(this.x, this.y - 200);
+      await new Promise(r => setTimeout(r, 600));
+    }
+
     const emptyCell = this.getEmptyCell();
     this.deleteCell(emptyCell);
-    await new Promise(r => setTimeout(r, 600));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 600));
+    }
 
     await this.downHeap(cell);
   }
 
-  async downHeap(cell: BstCell): Promise<void> {
+  async downHeap(cell: BstCell, animate = true): Promise<void> {
     while (!!cell && !!cell.node) {
       const minChild = this.getMinChild(cell);
+      if (!minChild) {
+        break;
+      }
       const currentNode = cell.node;
       const minNode = minChild.node;
       if (!currentNode || !minNode
         || minNode.value >= currentNode.value) {
         break;
       }
-      await this.swapNodes(minChild, cell);
+      await this.swapNodes(minChild, cell, animate);
       cell = minChild;
     }
   }
 
-  async swapNodes(first: BstCell, second: BstCell): Promise<void> {
+  async swapNodes(first: BstCell, second: BstCell, animate = true): Promise<void> {
     const lowerNode = first.removeNode();
     const higherNode = second.removeNode();
     const oldCellColor = first.color;
     const oldParentColor = second.color;
-    first.color = '#98dc73';
-    second.color = '#98dc73';
-    lowerNode.setTarget(second.x - 100, second.y);
-    higherNode.setTarget(first.x + 100, first.y);
-    await new Promise(r => setTimeout(r, 600));
-    lowerNode.setTarget(second.x, second.y);
-    higherNode.setTarget(first.x, first.y);
-    await new Promise(r => setTimeout(r, 300));
+    if (animate) {
+      first.color = '#98dc73';
+      second.color = '#98dc73';
+      lowerNode.setTarget(second.x - 100, second.y);
+      higherNode.setTarget(first.x + 100, first.y);
+      await new Promise(r => setTimeout(r, 600));
+      lowerNode.setTarget(second.x, second.y);
+      higherNode.setTarget(first.x, first.y);
+      await new Promise(r => setTimeout(r, 300));
+    }
     second.setNode(lowerNode);
     first.setNode(higherNode);
     first.color = oldCellColor;
     second.color = oldParentColor;
-    await new Promise(r => setTimeout(r, 600));
+    if (animate) {
+      await new Promise(r => setTimeout(r, 600));
+    }
   }
 
   getMinChild(cell: BstCell): BstCell | null{
@@ -164,12 +181,14 @@ export class Heap extends BinaryTree {
     this.removeCell(this.size--);
   }
 
-  async insert(node: SimulationNode): Promise<void> {
+  async insert(node: SimulationNode, animate = true): Promise<void> {
     const lastCell = this.getEmptyCell();
 
-    node.setTarget(lastCell.x, lastCell.y);
-    await new Promise(r => setTimeout(r, 600));
-    await this.add(node, lastCell);
+    if (animate) {
+      node.setTarget(lastCell.x, lastCell.y);
+      await new Promise(r => setTimeout(r, 600));
+    }
+    await this.add(node, lastCell, animate);
   }
 
   protected getParent(cell: BstCell, childIndex?: number): [BstCell, number] | [undefined, undefined] {

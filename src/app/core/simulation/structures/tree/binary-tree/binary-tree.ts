@@ -137,7 +137,7 @@ export abstract class BinaryTree extends SimulationGraph {
       });
 
     const treeMap = d3.tree()
-      .nodeSize([200, 200]);
+      .nodeSize([180, 180]);
 
     treeMap(this.treeHierarchy)
       .descendants().forEach((d: d3.HierarchyPointNode<BstCell>) => {
@@ -180,7 +180,9 @@ export abstract class BinaryTree extends SimulationGraph {
     this.deleteCell(rightChild);
 
     this.isValid = true;
+    invalidCell.isValid = true;
 
+    this.alignForces();
     return;
   }
 

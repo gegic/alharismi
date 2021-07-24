@@ -50,10 +50,9 @@ export class BinarySearchTree extends BinaryTree {
     this.linkHelper.addLink(cell, rightChild);
   }
 
-  async add(d: SimulationNode, bstCell: BstCell): Promise<void> {
+  async add(d: SimulationNode, bstCell: BstCell, animate = true): Promise<void> {
 
     bstCell.setNode(d);
-    d.lockedPlaceholder = bstCell;
 
     this.addChildCells(bstCell);
     this.alignForces();
@@ -67,7 +66,7 @@ export class BinarySearchTree extends BinaryTree {
 
   }
 
-  async find(value: number): Promise<BstCell | null> {
+  async find(value: number, animate = true): Promise<BstCell | null> {
 
     if (this.data.length === 0) {
       return null;
@@ -82,13 +81,17 @@ export class BinarySearchTree extends BinaryTree {
       const node = checkingCell.node;
       node.drawArrow = true;
 
-      await new Promise(r => setTimeout(r, 600));
+      if (animate) {
+        await new Promise(r => setTimeout(r, 600));
+      }
 
       node.drawArrow = false;
 
       if (node.value === value) {
         node.highlighted = true;
-        await new Promise(r => setTimeout(r, 600));
+        if (animate) {
+          await new Promise(r => setTimeout(r, 600));
+        }
         node.highlighted = false;
         return checkingCell;
       } else if (value < node.value) {
@@ -102,26 +105,30 @@ export class BinarySearchTree extends BinaryTree {
   /**
    * Finds and deletes a node with the passed value.
    * @param value - Value used to find a node and then delete it.
+   * @param animate
    * @return nodeCellPromise - A promise of an array consisting of simulation node,
    * a cell that was the first one affected by the occurred deletion, and a cell from
    * which the node was deleted.
    * The cell is null if the deleted node didn't have a parent, i.e. it was the root.
    */
-  async delete(value: number): Promise<[SimulationNode, BstCell | null, BstCell]> {
-    const found = await this.find(value);
+  async delete(value: number, animate = true): Promise<[SimulationNode, BstCell | null, BstCell]> {
+    const found = await this.find(value, animate);
     if (!found) {
       return null;
     }
     const leftChild = this.getLeftChild(found);
     const rightChild = this.getRightChild(found);
 
+    let ret: [SimulationNode, BstCell | null, BstCell];
     if (!leftChild.node && !rightChild.node) {
-      return await this.deleteLeaf(found, leftChild, rightChild);
+      ret = await this.deleteLeaf(found, leftChild, rightChild);
     } else if (!leftChild.node || !rightChild.node) {
-      return await this.deleteOnlyChild(found, leftChild, rightChild);
+      ret = await this.deleteOnlyChild(found, leftChild, rightChild);
     } else {
-      return await this.deleteTwoChildren(found, leftChild);
+      ret = await this.deleteTwoChildren(found, leftChild);
     }
+    ret[0].setTarget(this.x, this.y - 200);
+    return ret;
   }
 
   /**
@@ -129,14 +136,18 @@ export class BinarySearchTree extends BinaryTree {
    * @param target - The cell being deleted.
    * @param leftChild - Left child of the cell being deleted.
    * @param rightChild - Right child of the cell being deleted.
+   * @param animate - Whether the process should be animated.
    * @returns promise - A promise of the node which was deleted,
    * and the exact cell from which the node was deleted (twice for uniformity).
    */
-  async deleteLeaf(target: BstCell, leftChild: BstCell, rightChild: BstCell): Promise<[SimulationNode, BstCell | null, BstCell]> {
+  async deleteLeaf(target: BstCell, leftChild: BstCell, rightChild: BstCell, animate = true):
+    Promise<[SimulationNode, BstCell | null, BstCell]> {
     this.deleteCell(leftChild);
     this.deleteCell(rightChild);
 
     this.alignForces();
+
+
 
     return [target.removeNode(), target, target];
   }
@@ -146,17 +157,19 @@ export class BinarySearchTree extends BinaryTree {
    * @param target - The cell being deleted.
    * @param leftChild - Left child of the cell being deleted.
    * @param rightChild - Right child of the cell being deleted.
+   * @param animate - Whether the process should be animated.
    * @returns promise - A promise of the node which was deleted and the cell which replaces 'target'
    * (i.e. this cell was target's child and now is a child of the same cell the target was).
    */
-  async deleteOnlyChild(target: BstCell, leftChild: BstCell, rightChild: BstCell): Promise<[SimulationNode, BstCell | null, BstCell]> {
-    const parent = this.getParent(target)[0];
+  async deleteOnlyChild(target: BstCell, leftChild: BstCell, rightChild: BstCell, animate = true):
+    Promise<[SimulationNode, BstCell | null, BstCell]> {
+    const [parent, targetIndex] = this.getParent(target);
     const takenCell = !!leftChild.node ? leftChild : rightChild;
     const freeCell = !leftChild.node ? leftChild : rightChild;
     this.deleteCell(freeCell);
     this.deleteCell(target);
 
-    if (leftChild === target) {
+    if (targetIndex === 0) {
       this.setLeftChild(parent, takenCell);
     } else {
       this.setRightChild(parent, takenCell);
@@ -164,11 +177,13 @@ export class BinarySearchTree extends BinaryTree {
 
     const node = target.removeNode();
 
-    if (!!node) {
-      node.setTarget(this.x, this.y - 100);
-    }
+    if (animate) {
+      if (!!node) {
+        node.setTarget(this.x, this.y - 100);
+      }
 
-    await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => setTimeout(r, 600));
+    }
 
     if (parent) {
       this.linkHelper.addLink(parent, takenCell);
@@ -186,22 +201,25 @@ export class BinarySearchTree extends BinaryTree {
    * Deletes the node whose both children contain nodes.
    * @param target - The cell being deleted.
    * @param leftChild - Left child of the cell being deleted.
+   * @param animate - Whether the process should be animated.
    * @return nodeCellPromise - A promise of an array consisting of simulation node,
    * the cell that was the first one affected by the occurred deletion, and the cell
    * from which the node was deleted.
    *
    * The affected cell is null if the deleted node didn't have a parent, i.e. it was the root.
    */
-  async deleteTwoChildren(target: BstCell, leftChild: BstCell): Promise<[SimulationNode, BstCell | null, BstCell]> {
-    const substituteCell = this.findMax(leftChild);
+  async deleteTwoChildren(target: BstCell, leftChild: BstCell, animate = true):
+    Promise<[SimulationNode, BstCell | null, BstCell]> {
+    const substituteCell = await this.findMax(leftChild);
     const substituteNode = substituteCell.removeNode();
 
     const node = target.removeNode();
-    node.setTarget(this.x, this.y - 100);
 
-    substituteNode.setTarget(target.x, target.y);
-
-    await new Promise(r => setTimeout(r, 600));
+    if (animate) {
+      node.setTarget(this.x, this.y - 100);
+      substituteNode.setTarget(target.x, target.y);
+      await new Promise(r => setTimeout(r, 600));
+    }
 
     target.setNode(substituteNode);
 
@@ -210,19 +228,29 @@ export class BinarySearchTree extends BinaryTree {
 
     let deleted: [SimulationNode, BstCell | null, BstCell];
     if (!substituteLeft.node && !substituteRight.node) {
-      deleted = (await this.deleteLeaf(substituteCell, substituteLeft, substituteRight));
+      deleted = (await this.deleteLeaf(substituteCell, substituteLeft, substituteRight, animate));
     } else if (!substituteLeft.node || !substituteRight.node) {
-      deleted = (await this.deleteOnlyChild(substituteCell, substituteLeft, substituteRight));
+      deleted = (await this.deleteOnlyChild(substituteCell, substituteLeft, substituteRight, animate));
     }
 
     return [node, deleted[1], deleted[2]];
   }
 
-  findMax(sourceSubtreeRoot: BstCell): BstCell {
+  async findMax(sourceSubtreeRoot: BstCell, animate = true): Promise<BstCell> {
     let rightCell = sourceSubtreeRoot;
+    if (animate) {
+      rightCell.highlight('#5cff00');
+      await new Promise(r => setTimeout(r, 600));
+      rightCell.resetColor();
+    }
     let potentialRightCell = this.getRightChild(rightCell);
     while (!!potentialRightCell.node) {
       rightCell = potentialRightCell;
+      if (animate) {
+        rightCell.highlight('#5cff00');
+        await new Promise(r => setTimeout(r, 600));
+        rightCell.resetColor();
+      }
       potentialRightCell = this.getRightChild(rightCell);
     }
 
@@ -230,15 +258,17 @@ export class BinarySearchTree extends BinaryTree {
   }
 
 
-  async insert(node: SimulationNode): Promise<void> {
+  async insert(node: SimulationNode, animate = true): Promise<void> {
     let checkingCell = this.getRoot();
 
     while (checkingCell) {
       let side = 0;
       if (!checkingCell.node) {
-        node.setTarget(checkingCell.x + side, checkingCell.y - 100);
-        await new Promise(r => setTimeout(r, 600));
-        await this.add(node, checkingCell);
+        if (animate) {
+          node.setTarget(checkingCell.x + side, checkingCell.y - 100);
+          await new Promise(r => setTimeout(r, 600));
+        }
+        await this.add(node, checkingCell, animate);
         return;
       }
 
@@ -252,13 +282,17 @@ export class BinarySearchTree extends BinaryTree {
       } else if (checkingNode.value > node.value) {
         side = -100;
         checkingCell = this.getLeftChild(checkingCell);
-        node.setTarget(checkingNode.x + side, checkingNode.y);
-        await new Promise(r => setTimeout(r, 600));
+        if (animate) {
+          node.setTarget(checkingNode.x + side, checkingNode.y);
+          await new Promise(r => setTimeout(r, 600));
+        }
       } else {
         side = 100;
         checkingCell = this.getRightChild(checkingCell);
-        node.setTarget(checkingNode.x + side, checkingNode.y);
-        await new Promise(r => setTimeout(r, 600));
+        if (animate) {
+          node.setTarget(checkingNode.x + side, checkingNode.y);
+          await new Promise(r => setTimeout(r, 600));
+        }
       }
       checkingNode.drawArrow = false;
     }
@@ -301,7 +335,7 @@ export class BinarySearchTree extends BinaryTree {
    * If *cell* isn't provided, returns undefined.
    * @protected
    */
-  protected getLeftChild(cell: BstCell): BstCell | undefined {
+  getLeftChild(cell: BstCell): BstCell | undefined {
     if (!cell) {
       return undefined;
     }
@@ -319,6 +353,9 @@ export class BinarySearchTree extends BinaryTree {
    * @protected
    */
   protected setLeftChild(parent: BstCell, child: BstCell): void {
+    if (!child) {
+      return;
+    }
     this.detachParent(child);
 
     const parentId = !!parent ? parent.id : -1;
@@ -335,7 +372,7 @@ export class BinarySearchTree extends BinaryTree {
    * If *cell* isn't provided, returns undefined.
    * @protected
    */
-  protected getRightChild(cell: BstCell): BstCell | undefined {
+  getRightChild(cell: BstCell): BstCell | undefined {
     if (!cell) {
       return undefined;
     }
@@ -353,6 +390,9 @@ export class BinarySearchTree extends BinaryTree {
    * @protected
    */
   protected setRightChild(parent: BstCell, child: BstCell): void {
+    if (!child) {
+      return;
+    }
     this.detachParent(child);
 
     const parentId = !!parent ? parent.id : -1;
@@ -372,10 +412,12 @@ export class BinarySearchTree extends BinaryTree {
    * If there's no cell, a list with undefined elements is returned.
    * @protected
    */
-  protected getParent(cell: BstCell): [BstCell, number] | [undefined, undefined] {
+  getParent(cell: BstCell): [BstCell, number] | [undefined, undefined] {
     if (!cell) {
       return [undefined, undefined];
     }
+    console.log(cell.id);
+    console.log(this.parents);
     return this.parents[cell.id];
   }
 
@@ -385,7 +427,7 @@ export class BinarySearchTree extends BinaryTree {
    * @protected
    */
   protected detachChildren(cell: BstCell): void {
-    if (!this.children[cell.id]) {
+    if (!cell || !this.children[cell.id]) {
       return;
     }
     for (const cellsChild of this.children[cell.id]) {
@@ -405,6 +447,9 @@ export class BinarySearchTree extends BinaryTree {
    * @protected
    */
   protected detachParent(cell: BstCell): void {
+    if (!cell) {
+      return;
+    }
     if (!this.parents[cell.id]) {
       return;
     }

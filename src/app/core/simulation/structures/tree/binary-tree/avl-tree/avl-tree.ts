@@ -111,6 +111,7 @@ export class AvlTree extends BinarySearchTree {
     if (!rootParent) {
       newRoot.isRoot = true;
       newRoot.descriptor = rotationRoot.descriptor;
+      rotationRoot.descriptor = undefined;
       rotationRoot.isRoot = false;
     }
     if (childIndex === 0) {
@@ -147,6 +148,7 @@ export class AvlTree extends BinarySearchTree {
     if (!rootParent) {
       newRoot.isRoot = true;
       newRoot.descriptor = rotationRoot.descriptor;
+      rotationRoot.descriptor = undefined;
       rotationRoot.isRoot = false;
     }
     if (childIndex === 0) {

@@ -12,6 +12,7 @@ export class LinkDrawingHelper implements DrawingHelper<SimulationLink> {
       .attr('stroke-width', 10)
       .attr('stroke-linecap', 'round')
       .attr('stroke-opacity', 0.6);
+
     return linkElement;
   }
 

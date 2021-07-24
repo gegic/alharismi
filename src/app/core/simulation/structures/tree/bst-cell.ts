@@ -68,6 +68,8 @@ export class BstCell implements SimulationNodeDatum {
     this.node.noCollision = true;
     this.node.pointerEvents = false;
     this.node.nodeOrder = 2;
+    d.lockedPlaceholder = this;
+
   }
 
   removeNode(): SimulationNode {
@@ -88,6 +90,7 @@ export class BstCell implements SimulationNodeDatum {
 
   setDefaultColor(color: string): void {
     this.defaultColor = color;
+    this.color = color;
   }
 
   highlight(color: string): void {

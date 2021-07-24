@@ -18,4 +18,8 @@ export class SimulationLink implements SimulationLinkDatum<BstCell> {
     this.yDisplacement = yDisplacement;
   }
 
+  getLength(): number {
+    return Math.sqrt(Math.pow((this.source.y - this.target.y), 2) + Math.pow((this.source.x - this.target.x), 2));
+  }
+
 }

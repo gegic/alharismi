@@ -24,6 +24,7 @@ import {SkeletonModule} from 'primeng/skeleton';
 import { VisualizationViewComponent } from './view/visualization-view/visualization-view.component';
 import {ToastModule} from 'primeng/toast';
 import {ScrollPanelModule} from 'primeng/scrollpanel';
+import {PlaygroundComponent} from './view/playground/playground.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import {ScrollPanelModule} from 'primeng/scrollpanel';
     ScenarioGridComponent,
     SceneViewComponent,
     ContentViewComponent,
-    VisualizationViewComponent
+    VisualizationViewComponent,
+    PlaygroundComponent
   ],
   imports: [
     BrowserModule,

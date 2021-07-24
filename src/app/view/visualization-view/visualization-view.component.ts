@@ -12,6 +12,7 @@ import {Scene} from '../../core/simulation/scene';
 import {MessageService} from 'primeng/api';
 import {Skeleton} from 'primeng/skeleton';
 import {debounceTime} from 'rxjs/operators';
+import {PlaygroundService} from '../../core/services/playground.service';
 @Component({
   selector: 'app-visualization-view',
   templateUrl: './visualization-view.component.html',
@@ -35,9 +36,14 @@ export class VisualizationViewComponent implements AfterViewInit {
   constructor(private router: Router,
               private scenarioService: ScenarioService,
               private sceneService: SceneService,
+              private playgroundService: PlaygroundService,
               private messageService: MessageService) { }
 
   ngAfterViewInit(): void {
+
+    setTimeout(() => this.init(), 600);
+  }
+  init(): void {
     this.widthHeight = [this.skeletonElement.nativeElement.offsetWidth, this.skeletonElement.nativeElement.offsetHeight - 10];
 
     this.setupSvg();
@@ -53,11 +59,7 @@ export class VisualizationViewComponent implements AfterViewInit {
   }
 
   openInPlayground(): void {
-    const url = this.router.serializeUrl(
-      this.router.createUrlTree([''])
-    );
-
-    window.open(url, '_blank');
+    this.router.navigate(['playground']);
   }
 
   setupSvg(): void {
@@ -82,8 +84,10 @@ export class VisualizationViewComponent implements AfterViewInit {
       await this.scene.play(this.scenarioService.simulation);
     } catch (e: any) {
       this.messageService.add({severity: 'error', summary: 'Error', detail: e});
+      console.log(e);
     }
     this.scene.played = 'played';
+    this.sceneService.played.next('played');
   }
 
   readScene(): void {
@@ -97,11 +101,13 @@ export class VisualizationViewComponent implements AfterViewInit {
   async setScene(sc: Scene): Promise<void> {
     this.scenarioService.simulation.reset();
     await sc.setup(this.scenarioService.simulation);
+    this.sceneService.set.next(true);
   }
 
   async resetScene(): Promise<void> {
     await this.setScene(this.scene);
     this.scene.played = 'not_played';
+    this.sceneService.played.next('not_played');
   }
 
   @HostListener('window:resize', ['$event'])

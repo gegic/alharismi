@@ -11,6 +11,9 @@ export class LinkHelper {
   }
 
   removeLink(source: BstCell, target: BstCell): void {
+    if (!source || !target) {
+      return;
+    }
     const deletionIndex = this.links.findIndex((sl: SimulationLink) => sl.source.id === source.id && sl.target.id === target.id);
     if (deletionIndex !== -1) {
       this.links.splice(deletionIndex, 1);

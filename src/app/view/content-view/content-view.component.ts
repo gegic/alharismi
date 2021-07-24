@@ -13,6 +13,8 @@ import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 })
 export class ContentViewComponent implements OnInit {
 
+  content: SafeHtml | string = '';
+  successContent: SafeHtml | string = '';
   private _isContentLoading: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   showLoadingSkeleton = true;
 
@@ -21,32 +23,51 @@ export class ContentViewComponent implements OnInit {
               private sanitizer: DomSanitizer) { }
 
   ngOnInit(): void {
-    this.sceneService.scene.pipe(debounceTime(100)).subscribe(val => {
+    this.sceneService.set.pipe(debounceTime(100)).subscribe(val => {
       this.showLoadingSkeleton = true;
+      this.getContent();
       this.showLoadingSkeleton = false;
+    });
+    this.sceneService.played.pipe(debounceTime(100)).subscribe(val => {
+      if (val === 'played') {
+        this.showLoadingSkeleton = true;
+        this.getSuccessContent();
+        this.showLoadingSkeleton = false;
+      }
     });
   }
 
   getRoute(event: MouseEvent): void {
     // @ts-ignore
     const routerLink = event.target.getAttribute('href');
-    this.router.navigate([routerLink]);
+    if (!routerLink) {
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
+
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree([routerLink])
+    );
+
+    window.open(url, '_blank');
+
   }
 
-  get content(): SafeHtml {
+  getContent(): void {
     if (!this.scene) {
-      return '';
+       this.content = '';
+       return;
     }
-    return this.sanitizer.bypassSecurityTrustHtml(this.scene.content());
+    this.content = this.sanitizer.bypassSecurityTrustHtml(this.scene.content());
   }
 
-  get successContent(): SafeHtml {
+  getSuccessContent(): void {
     if (!this.scene) {
-      return '';
+      this.successContent = '';
+      return;
     }
-    return this.sanitizer.bypassSecurityTrustHtml(this.scene.successContent());
+    this.successContent = this.sanitizer.bypassSecurityTrustHtml(this.scene.successContent());
   }
 
 

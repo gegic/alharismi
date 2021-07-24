@@ -5,8 +5,9 @@ import {Append} from './scenes/append';
 import {Insertion} from './scenes/insertion';
 import {PopFirst} from './scenes/pop-first';
 import {PopLast} from './scenes/pop-last';
+import {Deletion} from './scenes/deletion';
 
-const linkedListScenario = new Scenario('Linked lists', 'linked-list', 'Operations on singly and doubly linked lists');
+const linkedListScenario = new Scenario('Linked list', 'linked-list', 'Prepending, appending, insertion and removing the elements');
 
 linkedListScenario.scenes = [
   LinkedListScene,
@@ -14,7 +15,8 @@ linkedListScenario.scenes = [
   Append,
   Insertion,
   PopFirst,
-  PopLast
+  PopLast,
+  Deletion
 ];
 
 export default linkedListScenario;

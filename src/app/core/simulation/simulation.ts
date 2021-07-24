@@ -34,6 +34,7 @@ import {LinkedListHandler} from './handlers/linked-list-handler';
 import {LinkedListDrawing} from './helpers/drawing/linked-list-drawing';
 import {LinkedListMouse} from './helpers/mouse/linked-list-mouse';
 import {ObjectFactory} from './object-factory';
+import {SvgMouse} from './helpers/mouse/svg-mouse';
 
 export class Simulation {
 
@@ -49,7 +50,7 @@ export class Simulation {
   objectFactory?: ObjectFactory;
   camera?: Camera;
   widthHeight: BehaviorSubject<[number, number]> = new BehaviorSubject([0, 0]);
-
+  svgMouse?: SvgMouse;
   interactable = true;
 
   constructor(canvas: d3.Selection<any, any, d3.BaseType, any>) {
@@ -59,6 +60,9 @@ export class Simulation {
   startSimulation(svg: d3.Selection<any, any, any, any>): void {
     this.loop = new SimulationLoop();
     this.loop.setupForce();
+
+    this.svgMouse = new SvgMouse(this);
+    this.svgMouse.addMouseInteraction(svg);
 
     this.camera = new Camera(svg, this.canvas, this.widthHeight.getValue());
 
@@ -134,7 +138,13 @@ export class Simulation {
       this.canvas
     );
 
-    this.loop.setHandlers(this.nodeHandler, this.bstHandler, this.heapHandler, this.linkedListHandler, this.arrayHandler);
+    this.loop.setHandlers(
+      this.nodeHandler,
+      this.bstHandler,
+      this.heapHandler,
+      this.linkedListHandler,
+      this.arrayHandler
+    );
   }
 
   reset(): void {

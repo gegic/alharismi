@@ -23,6 +23,11 @@ export class ScenarioGridComponent implements OnInit {
     this.router.navigate(['visualize', scenario.path, 0]);
   }
 
+  playground(): void {
+    event.stopPropagation();
+    this.router.navigate(['playground']);
+  }
+
   get scenarios(): Scenario[] {
     return this.scenarioService.scenarios;
   }

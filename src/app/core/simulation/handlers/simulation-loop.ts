@@ -55,6 +55,7 @@ export class SimulationLoop {
           .radius((n: SimulationNode | BstCell) => n.radius)
       )
       .alphaTarget(.5)
+      .velocityDecay(.6)
       .on('tick', this.ticked(30));
   }
 
@@ -76,7 +77,6 @@ export class SimulationLoop {
         this.nodeElements = svg.selectAll('.node');
         this.arrayElements = svg.selectAll('.array');
         this.bstCellElements = svg.selectAll('.bst-cell');
-
 
         this.nodes = this.bstCellElements.data().concat(this.nodeElements.data().filter(d => !d.noCollision));
         this.force.nodes(this.nodes);
@@ -104,16 +104,6 @@ export class SimulationLoop {
 
       }
     };
-  }
-
-  repaint(): void {
-
-
-
-    // this.texts = svg.selectAll('.circlenames, .circlevalues, .rootnames, .textnode, .buttontext, .textarea');
-    // this.links = svg.selectAll('.default_link');
-    // this.bstLinks = svg.selectAll('.BST_line');
-    // this.arrows = svg.selectAll('.circlearrow');
   }
 
   setHandlers(...drawableHandlers: DrawableHandler<SimulationNode | SimulationArray | SimulationGraph>[]): void {

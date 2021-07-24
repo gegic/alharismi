@@ -29,10 +29,8 @@ export class SimulationGraph implements SimulationNodeDatum, Drawable {
   }
 
   async add(d: SimulationNode, bstCell: BstCell): Promise<void> {
-
     bstCell.setNode(d);
     d.lockedPlaceholder = bstCell;
-
   }
 
   getData(): BstCell[] {

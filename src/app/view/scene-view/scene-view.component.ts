@@ -38,19 +38,18 @@ export class SceneViewComponent implements OnInit {
 
   prepareScene(): void {
 
-    if (!this.scenarioService.currentScenario.getValue()) {
-      const scenario = this.scenarioService.scenarios.find(sc => sc.path === this.scenarioPath);
-      if (!!scenario && scenario.scenes.length < 1) {
-        this.router.navigate(['']);
-      }
-      this.scenarioService.currentScenario.next(scenario);
+    const scenario = this.scenarioService.scenarios.find(sc => sc.path === this.scenarioPath);
+    if (!!scenario && scenario.scenes.length < 1) {
+      this.router.navigate(['']);
     }
+    this.scenarioService.currentScenario.next(scenario);
     const sceneClass = this.scenes[this.sceneIndex];
     const scene = new sceneClass();
     scene.isFirst = this.sceneIndex === 0;
     scene.isLast = this.sceneIndex === this.scenes.length - 1;
     this.sceneService.scene.next(scene);
-
+    this.sceneService.played.next(scene.played);
+    this.sceneService.set.next(false);
     this.isContentLoading = false;
   }
 
