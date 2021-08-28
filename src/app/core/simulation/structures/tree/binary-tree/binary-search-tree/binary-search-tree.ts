@@ -189,7 +189,7 @@ export class BinarySearchTree extends BinaryTree {
       this.linkHelper.addLink(parent, takenCell);
     } else {
       this.setLeftChild(null, takenCell);
-      takenCell.descriptor = target.descriptor;
+      takenCell.setDefaultDescriptor(target.defaultDescriptor);
       takenCell.isRoot = true;
     }
     this.alignForces();
@@ -299,21 +299,11 @@ export class BinarySearchTree extends BinaryTree {
   }
 
   protected checkEntry(cell: BstCell): boolean {
-    const upTreeGenerator = this.upTree(cell);
-    let iterator = upTreeGenerator.next();
-    if (iterator.done) {
-      return true;
-    }
 
-    while (!iterator.done) {
-      const [, parent, childIndex] = iterator.value;
-
-      if (!parent) {
-        return true;
-      }
+    let [parent, childIndex] = this.getParent(cell);
+    while (!!parent) {
 
       const isLeftChild = childIndex === 0;
-      // if the left child
       if (isLeftChild) {
         if (cell.node.value > parent.node.value) {
           return false;
@@ -323,7 +313,7 @@ export class BinarySearchTree extends BinaryTree {
           return false;
         }
       }
-      iterator = upTreeGenerator.next();
+      [parent, childIndex] = this.getParent(parent);
     }
 
     return true;

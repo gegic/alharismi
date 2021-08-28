@@ -4,6 +4,7 @@ import {Simulation} from '../../../app/core/simulation/simulation';
 import {SimulationArray} from '../../../app/core/simulation/structures/array/simulation-array';
 import {ArrayCell} from '../../../app/core/simulation/structures/array/array-cell';
 import {SimulationNode} from '../../../app/core/simulation/basics/simulation-node';
+import {SimulationQueue} from '../../../app/core/simulation/structures/array/simulation-queue';
 
 export class Enqueue implements Scene {
   id = 4;
@@ -13,12 +14,9 @@ export class Enqueue implements Scene {
   set: boolean;
   setupPath: string;
 
-  queue: SimulationArray;
-  index = -1;
+  queue: SimulationQueue;
   elements = '';
   queueSize = -1;
-  firstElement: ArrayCell;
-  lastElement: ArrayCell;
   firstValue = -1;
   lastValue = -1;
   toEnqueue = 23.11;
@@ -26,27 +24,20 @@ export class Enqueue implements Scene {
   async setup(simulation: Simulation): Promise<void> {
     const nodes = simulation.nodeHandler.generateNodes(6);
     simulation.nodeHandler.add(nodes);
-    this.queue = simulation.objectFactory.create('array', 0, 0, 10) as SimulationArray;
+    this.queue = simulation.objectFactory.create('queue', 0, 0, 10) as SimulationQueue;
     simulation.arrayHandler.add(this.queue);
 
-    for (let i = 0; i < nodes.length; ++i) {
-      await this.queue.insertAt(nodes[i], i, false);
+    for (const node of nodes) {
+      await this.queue.enqueue(node, false);
     }
-    this.firstElement = this.queue.data[0];
-    this.lastElement = this.queue.data[this.queue.size - 1];
-    this.firstElement.highlight('#a0ff6f');
-    this.lastElement.highlight('#ff9494');
-    this.firstValue = this.firstElement.node.value;
-    this.lastValue = this.lastElement.node.value;
+    this.firstValue = this.queue.left.node.value;
+    this.lastValue = this.queue.right.node.value;
   }
 
   async play(simulation: Simulation): Promise<void> {
     const node = new SimulationNode(this.toEnqueue, -1, this.queue.x, this.queue.y - 200);
     simulation.nodeHandler.add(node);
-    this.lastElement.resetColor();
-    await this.queue.insertAt(node, this.queue.size);
-    this.lastElement = this.queue.data[this.queue.size - 1];
-    this.lastElement.highlight('#ff9494');
+    await this.queue.enqueue(node);
   }
 
   content(): string {

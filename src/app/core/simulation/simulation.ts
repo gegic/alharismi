@@ -47,14 +47,18 @@ export class Simulation {
   bstHandler?: BinarySearchTreeHandler;
   heapHandler?: HeapHandler;
   linkedListHandler?: LinkedListHandler;
+
   objectFactory?: ObjectFactory;
   camera?: Camera;
   widthHeight: BehaviorSubject<[number, number]> = new BehaviorSubject([0, 0]);
   svgMouse?: SvgMouse;
   interactable = true;
+  prompt: (header: string) => Promise<string>;
 
-  constructor(canvas: d3.Selection<any, any, d3.BaseType, any>) {
+  constructor(canvas: d3.Selection<any, any, d3.BaseType, any>,
+              prompt: (header: string) => Promise<string>) {
     this.canvas = canvas;
+    this.prompt = prompt;
   }
 
   startSimulation(svg: d3.Selection<any, any, any, any>): void {
@@ -63,6 +67,8 @@ export class Simulation {
 
     this.svgMouse = new SvgMouse(this);
     this.svgMouse.addMouseInteraction(svg);
+    this.objectFactory = new ObjectFactory();
+
 
     this.camera = new Camera(svg, this.canvas, this.widthHeight.getValue());
 
@@ -85,20 +91,13 @@ export class Simulation {
       colorProvider
     );
 
-    this.objectFactory = new ObjectFactory();
-
-    const arrayDrawing = new ArrayDrawing();
-    const arrayCellDrawing = new ArrayCellDrawing();
-    const arrayDrag = new ArrayDrag(this);
-    const arrayMouse = new ArrayMouse(this);
-    const arrayCellMouse = new ArrayCellMouse(this);
     this.arrayHandler = new ArrayHandler(
       this,
-      arrayDrawing,
-      arrayCellDrawing,
-      arrayDrag,
-      arrayMouse,
-      arrayCellMouse,
+      new ArrayDrawing(),
+      new ArrayCellDrawing(),
+      new ArrayDrag(this),
+      new ArrayMouse(this),
+      new ArrayCellMouse(this),
       this.canvas
     );
 
@@ -143,7 +142,7 @@ export class Simulation {
       this.bstHandler,
       this.heapHandler,
       this.linkedListHandler,
-      this.arrayHandler
+      this.arrayHandler,
     );
   }
 

@@ -49,7 +49,7 @@ export class NodeMouse implements MouseHelper<SimulationNode> {
       {
         title: 'Set value',
         action: async (elm: SimulationNode) => {
-          const newValue = prompt('Set value to');
+          const newValue = await this.simulation.prompt('Set value to');
 
           let parsed = parseFloat(newValue);
 

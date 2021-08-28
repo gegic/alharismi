@@ -20,8 +20,10 @@ export class ScenarioService {
   constructor(private httpClient: HttpClient) {
   }
 
-  initSimulation(canvas: Selection<any, any, any, any>, widthHeight: [number, number]): void {
-    this.simulation = new Simulation(canvas);
+  initSimulation(canvas: Selection<any, any, any, any>,
+                 widthHeight: [number, number],
+                 prompt: (header: string) => Promise<string>): void {
+    this.simulation = new Simulation(canvas, prompt);
     this.simulation.widthHeight.next(widthHeight);
   }
 

@@ -1,0 +1,7 @@
+<form [formGroup]="group" (ngSubmit)="close()">
+  <input formControlName="typed" [autofocus]="true" type="text" pInputText/>
+  <div class="p-flex-row">
+    <button class="p-ml-auto" type="button" label="Close" (click)="close()" pButton></button>
+    <button class="p-ml-2 p-mr-2" type="submit" label="Submit" pButton></button>
+  </div>
+</form>

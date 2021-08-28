@@ -5,7 +5,7 @@
          pRipple>
       <p-card [header]="scenario.name">
         <ng-template pTemplate="header">
-          <img [alt]="scenario.name + ' cover'" src="scenarios/arrays/cover.png">
+          <img [alt]="scenario.name + ' cover'" [src]="scenario.cover">
         </ng-template>
         <p>{{scenario.description}}</p>
         <ng-template pTemplate="footer">
@@ -21,32 +21,10 @@
       </p-card>
     </div>
   </div>
-<!--  <div class="p-col-12 p-sm-6 p-md-4 p-xl-3">-->
-<!--    <div class="clickable-card"-->
-<!--         (click)="playground()"-->
-<!--         pRipple>-->
-<!--      <p-card header="Playground">-->
-<!--        <ng-template pTemplate="header">-->
-<!--          <img alt="Playground cover" src="scenarios/arrays/cover.png">-->
-<!--        </ng-template>-->
-<!--        <p>Explore all available data structures</p>-->
-<!--        <ng-template pTemplate="footer">-->
-<!--          <div class="p-text-right">-->
-<!--            <button class="p-button p-button-rounded"-->
-<!--                    label="Visualize"-->
-<!--                    icon="pi pi-eye"-->
-<!--                    (click)="playground()"-->
-<!--                    pButton-->
-<!--            ></button>-->
-<!--          </div>-->
-<!--        </ng-template>-->
-<!--      </p-card>-->
-<!--    </div>-->
-<!--  </div>-->
   <div class="p-col-12 p-sm-6 p-md-4 p-xl-3">
     <p-card class="soon-card" header="Soon...">
       <ng-template pTemplate="header">
-        <img alt="Soon cover" src="scenarios/arrays/cover.png">
+        <img alt="Soon cover" src="scenarios/soon-cover.png">
       </ng-template>
       <p>More coming coon</p>
       <ng-template pTemplate="footer">

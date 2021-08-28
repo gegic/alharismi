@@ -22,7 +22,7 @@ export class HeapMouse implements MouseHelper<Heap> {
       {
         title: 'Change name',
         action: async (elm: Heap) => {
-          elm.getRoot().descriptor = prompt('New name');
+          elm.getRoot().setDefaultDescriptor(await this.simulation.prompt('New name'));
         }
       },
       {
@@ -40,7 +40,7 @@ export class HeapMouse implements MouseHelper<Heap> {
         title: 'Insert',
         disabled: !d.isValid,
         action: async (heap: Heap) => {
-          const newValue = parseFloat(prompt('Which value to insert'));
+          const newValue = parseFloat(await this.simulation.prompt('Which value to insert'));
           if (isNaN(newValue)) {
             alert('Value invalid');
             return;
@@ -55,7 +55,7 @@ export class HeapMouse implements MouseHelper<Heap> {
         title: 'Delete',
         disabled: !d.isValid,
         action: async (heap: Heap) => {
-          const deleteValue = parseFloat(prompt('Which value to delete'));
+          const deleteValue = parseFloat(await this.simulation.prompt('Which value to delete'));
           if (isNaN(deleteValue)) {
             alert('Value invalid');
             return;

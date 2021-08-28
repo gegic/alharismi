@@ -11,7 +11,7 @@ import {DeletionBeginning} from './scenes/deletion-beginning';
 import {SortedSearch} from './scenes/sorted-search';
 
 const arrayScenario = new Scenario('Array', 'array', 'Search, insertion, and deletion of elements of an array.');
-
+arrayScenario.cover = 'scenarios/arrays/cover.png';
 arrayScenario.scenes = [
   StartScene,
   SearchScene,

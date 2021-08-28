@@ -8,7 +8,7 @@ import {PopLast} from './scenes/pop-last';
 import {Deletion} from './scenes/deletion';
 
 const linkedListScenario = new Scenario('Linked list', 'linked-list', 'Prepending, appending, insertion and removing the elements');
-
+linkedListScenario.cover = 'scenarios/linked-list/cover.png';
 linkedListScenario.scenes = [
   LinkedListScene,
   Prepend,

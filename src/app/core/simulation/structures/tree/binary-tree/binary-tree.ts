@@ -92,7 +92,7 @@ export abstract class BinaryTree extends SimulationGraph {
   setRoot(): void {
     const root = new BstCell(this, this.maxId++, this.x, this.y);
     root.isRoot = true;
-    root.descriptor = `tree_${this.id}`;
+    root.setDefaultDescriptor(`tree_${this.id}`);
     this.addCell(root, null, true);
   }
 
@@ -184,46 +184,5 @@ export abstract class BinaryTree extends SimulationGraph {
 
     this.alignForces();
     return;
-  }
-
-  /**
-   * Generator which traverses the tree in a breadth-first manner.
-   * @param root - Traversal starts from this cell.
-   */
-  *bfTraversal(root: BstCell): Generator<BstCell> {
-    const queue: BstCell[] = [];
-    queue.push(root);
-
-    while (queue.length > 0) {
-      const cell = queue.shift();
-      const rightChild = this.getRightChild(cell);
-      const leftChild = this.getLeftChild(cell);
-
-      yield cell;
-
-      if (!!rightChild) {
-        queue.push(rightChild);
-      }
-      if (!!leftChild) {
-        queue.push(leftChild);
-      }
-    }
-  }
-
-  /**
-   * Reaches root by traversing a tree from the starting cell upwards.
-   * @param cell - The starting cell.
-   * @yields [currentCell, parent, childIndex] - The cell that generator is
-   * currently checking, its parent and whether the cell if the
-   * left child (0) or the right child (1) of its parent.
-   */
-  *upTree(cell: BstCell): Generator<[BstCell, BstCell, number]> {
-    let [parent, childIndex] = this.getParent(cell);
-    let currentCell = cell;
-    while (!!currentCell) {
-      yield [currentCell, parent, childIndex];
-      currentCell = parent;
-      [parent, childIndex] = this.getParent(parent);
-    }
   }
 }

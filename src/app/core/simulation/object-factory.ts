@@ -6,8 +6,10 @@ import {AvlTree} from './structures/tree/binary-tree/avl-tree/avl-tree';
 import {RedBlackTree} from './structures/tree/binary-tree/red-black-tree/red-black-tree';
 import {Heap} from './structures/tree/binary-tree/heap/heap';
 import {LinkedList} from './structures/tree/linked-list/linked-list';
+import {SimulationStack} from './structures/array/simulation-stack';
+import {SimulationQueue} from './structures/array/simulation-queue';
 
-type objectType = 'node' | 'array' | 'bst' | 'avl' | 'rb' | 'heap' | 'singlyLinkedList';
+type objectType = 'node' | 'array' | 'bst' | 'avl' | 'rb' | 'heap' | 'singlyLinkedList' | 'stack' | 'queue';
 
 export class ObjectFactory {
   create(type: objectType, x: number, y: number, value?: number): Drawable {
@@ -26,6 +28,10 @@ export class ObjectFactory {
         return this.createHeap(x, y);
       case 'singlylinkedlist':
         return this.createSinglyLinkedList(x, y);
+      case 'stack':
+        return this.createStack(x, y, value);
+      case 'queue':
+        return this.createQueue(x, y, value);
     }
   }
 
@@ -37,6 +43,18 @@ export class ObjectFactory {
     const arr = new SimulationArray(-1, x, y);
     arr.setCapacity(value ?? 10);
     return arr;
+  }
+
+  private createStack(x: number, y: number, value?: number): SimulationStack {
+    const stack = new SimulationStack(-1, x, y);
+    stack.setCapacity(value ?? 10);
+    return stack;
+  }
+
+  private createQueue(x: number, y: number, value?: number): SimulationQueue {
+    const queue = new SimulationQueue(-1, x, y);
+    queue.setCapacity(value ?? 10);
+    return queue;
   }
 
   private createBst(x: number, y: number): BinarySearchTree {

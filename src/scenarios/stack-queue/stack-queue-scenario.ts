@@ -8,7 +8,7 @@ import {Dequeue} from './scenes/dequeue';
 import {CircularQueue} from './scenes/circular-queue';
 
 const stackQueueScenario = new Scenario('Stack and queue', 'stack-queue', 'Array implementations of stack and queue.');
-
+stackQueueScenario.cover = 'scenarios/stack-queue/cover.png';
 stackQueueScenario.scenes = [
   Stack,
   Push,

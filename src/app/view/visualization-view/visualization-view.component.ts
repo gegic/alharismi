@@ -1,18 +1,17 @@
-import {AfterViewChecked, AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, HostListener, ViewChild} from '@angular/core';
 import {Router} from '@angular/router';
-import {BehaviorSubject} from 'rxjs';
 import * as d3 from 'd3';
 import {Selection} from 'd3-selection';
-import {SimulationNode} from '../../core/simulation/basics/simulation-node';
-import {SimulationLink} from '../../core/simulation/basics/simulation-link';
 import {ScenarioService} from '../../core/services/scenario.service';
 import {ArrowheadHelper} from '../../core/simulation/helpers/arrowhead-helper';
 import {SceneService} from '../../core/services/scene.service';
 import {Scene} from '../../core/simulation/scene';
 import {MessageService} from 'primeng/api';
-import {Skeleton} from 'primeng/skeleton';
 import {debounceTime} from 'rxjs/operators';
 import {PlaygroundService} from '../../core/services/playground.service';
+import {DialogService} from 'primeng/dynamicdialog';
+import {PromptComponent} from '../prompt/prompt.component';
+
 @Component({
   selector: 'app-visualization-view',
   templateUrl: './visualization-view.component.html',
@@ -37,7 +36,8 @@ export class VisualizationViewComponent implements AfterViewInit {
               private scenarioService: ScenarioService,
               private sceneService: SceneService,
               private playgroundService: PlaygroundService,
-              private messageService: MessageService) { }
+              private messageService: MessageService,
+              private dialogService: DialogService) { }
 
   ngAfterViewInit(): void {
 
@@ -51,7 +51,7 @@ export class VisualizationViewComponent implements AfterViewInit {
       .append('g')
       .attr('class', 'canvas');
 
-    this.scenarioService.initSimulation(g, this.widthHeight);
+    this.scenarioService.initSimulation(g, this.widthHeight, this.promptString(this.dialogService));
     this.scenarioService.startSimulation(this.svg);
     this.scenarioService.simulation.camera.focusSvg();
     this.scenarioService.simulation.interactable = false;
@@ -122,6 +122,17 @@ export class VisualizationViewComponent implements AfterViewInit {
       .attr('width', this.widthHeight[0]);
 
     this.scenarioService.updateWidthHeight(this.widthHeight);
+  }
+
+  promptString(dialogService: DialogService): (header: string) => Promise<string> {
+    return async (header: string) => {
+      const ref = dialogService.open(PromptComponent, {
+        header,
+        baseZIndex: 1000,
+        width: '50%'
+      });
+      return await ref.onClose.toPromise();
+    };
   }
 
   get speed(): number {

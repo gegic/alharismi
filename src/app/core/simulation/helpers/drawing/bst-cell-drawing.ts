@@ -40,7 +40,7 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
       .attr('pointer-events', 'none')
       .attr('font-size', 0)
       .raise()
-      .style('fill', d => d.graph.isValid ? 'black' : '#860000')
+      .style('fill', d => d.graph.isValid ? d.descriptorColor : '#860000')
       .text(d => d.graph.isValid ? 'empty' : 'invalid')
       .transition()
       .duration(500)
@@ -73,7 +73,7 @@ export class BstCellDrawing implements DrawingHelper<BstCell> {
 
     updateElement
       .select('.bst-cell-empty')
-      .style('fill', d => d.graph.isValid ? 'black' : '#860000')
+      .style('fill', d => d.graph.isValid ? d.descriptorColor : '#860000')
       .text(d => d.graph.isValid ? 'empty' : 'invalid');
 
     return updateElement;

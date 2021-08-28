@@ -21,6 +21,7 @@ export class RedBlackTree extends BinarySearchTree {
 
   addCell(cell: BstCell, parent: BstCell | null, left = true): void {
     super.addCell(cell, parent, left);
+    cell.descriptorColor = '#d2cdc8';
     this.setColor(cell, Color.BLACK);
   }
 
@@ -230,8 +231,8 @@ export class RedBlackTree extends BinarySearchTree {
     this.linkHelper.removeLink(rootParent, rotationRoot);
     if (!rootParent) {
       newRoot.isRoot = true;
-      newRoot.descriptor = rotationRoot.descriptor;
-      rotationRoot.descriptor = '';
+      newRoot.setDefaultDescriptor(rotationRoot.defaultDescriptor);
+      rotationRoot.setDefaultDescriptor(undefined);
       rotationRoot.isRoot = false;
     }
     if (childIndex === 0) {
@@ -274,8 +275,8 @@ export class RedBlackTree extends BinarySearchTree {
     this.linkHelper.removeLink(rootParent, rotationRoot);
     if (!rootParent) {
       newRoot.isRoot = true;
-      newRoot.descriptor = rotationRoot.descriptor;
-      rotationRoot.descriptor = '';
+      newRoot.setDefaultDescriptor(rotationRoot.defaultDescriptor);
+      rotationRoot.setDefaultDescriptor(undefined);
       rotationRoot.isRoot = false;
     }
     if (childIndex === 0) {
@@ -286,11 +287,6 @@ export class RedBlackTree extends BinarySearchTree {
     if (!!rootParent) {
       this.linkHelper.addLink(rootParent, newRoot);
     }
-    //
-    // this.alignForces();
-    // if (animate) {
-    //   await new Promise(r => setTimeout(r, 600));
-    // }
     this.linkHelper.removeLink(rotationRoot, newRoot);
     this.setRightChild(newRoot, rotationRoot);
     this.linkHelper.addLink(newRoot, rotationRoot);

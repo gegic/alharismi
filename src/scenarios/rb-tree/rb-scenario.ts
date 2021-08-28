@@ -9,7 +9,7 @@ import {DeletionThirdCase} from './scenes/deletion-third-case';
 
 const rbScenario = new Scenario('Red-black tree', 'rb-avl',
   'Insertion, deletion and searching in a Red-black tree ');
-
+rbScenario.cover = 'scenarios/rb-tree/cover.png';
 rbScenario.scenes = [
   RedBlack,
   InsertionFirstCase,

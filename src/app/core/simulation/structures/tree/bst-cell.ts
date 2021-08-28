@@ -11,7 +11,10 @@ export class BstCell implements SimulationNodeDatum {
 
   defaultColor = '#E2E8CE';
   color = '#E2E8CE';
+  defaultDescriptor?: string;
+  additionalDescriptor?: string;
   descriptor?: string;
+  descriptorColor = '#000000';
   isRoot = false;
   noCollision = false;
   isMouseOver = false;
@@ -42,7 +45,7 @@ export class BstCell implements SimulationNodeDatum {
     this.graphX = x;
     this.graphY = y;
     this.id = id;
-    this.descriptor = descriptor;
+    this.setDefaultDescriptor(descriptor);
   }
 
   setTarget(x: number, y: number): void {
@@ -91,6 +94,16 @@ export class BstCell implements SimulationNodeDatum {
   setDefaultColor(color: string): void {
     this.defaultColor = color;
     this.color = color;
+  }
+
+  setDefaultDescriptor(descriptor: string | undefined): void {
+    this.defaultDescriptor = descriptor;
+    this.descriptor = `${this.defaultDescriptor ?? ''} ${this.additionalDescriptor ?? ''}`;
+  }
+
+  addToDescriptor(descriptor: string): void {
+    this.additionalDescriptor = descriptor;
+    this.descriptor = `${this.defaultDescriptor ?? ''} ${this.additionalDescriptor ?? ''}`;
   }
 
   highlight(color: string): void {

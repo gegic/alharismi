@@ -22,7 +22,7 @@ export class BstMouse implements MouseHelper<BinarySearchTree> {
       {
         title: 'Change name',
         action: async (elm: BinarySearchTree) => {
-          elm.getData()[0].descriptor = prompt('New name');
+          elm.getRoot().setDefaultDescriptor(await this.simulation.prompt('New name'));
         }
       },
       {
@@ -33,7 +33,7 @@ export class BstMouse implements MouseHelper<BinarySearchTree> {
         title: 'Find',
         disabled: !d.isValid,
         action: async (bst: BinarySearchTree) => {
-          const newValue = prompt('Which value to find');
+          const newValue = await this.simulation.prompt('Which value to find');
 
           const parsed = parseFloat(newValue);
 
@@ -48,7 +48,7 @@ export class BstMouse implements MouseHelper<BinarySearchTree> {
         title: 'Insert',
         disabled: !d.isValid,
         action: async (bst: BinarySearchTree) => {
-          const newValue = parseFloat(prompt('Which value to insert'));
+          const newValue = parseFloat(await this.simulation.prompt('Which value to insert'));
           if (isNaN(newValue)) {
             alert('Value invalid');
             return;
@@ -62,7 +62,7 @@ export class BstMouse implements MouseHelper<BinarySearchTree> {
         title: 'Delete',
         disabled: !d.isValid,
         action: async (bst: BinarySearchTree) => {
-          const deleteValue = parseFloat(prompt('Which value to delete'));
+          const deleteValue = parseFloat(await this.simulation.prompt('Which value to delete'));
           if (isNaN(deleteValue)) {
             alert('Value invalid');
             return;

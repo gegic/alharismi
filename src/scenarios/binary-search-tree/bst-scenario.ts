@@ -9,7 +9,7 @@ import {DeletionTwoChildren} from './scenes/deletion-two-children';
 
 const bstScenario = new Scenario('Binary search tree', 'binary-search-tree',
   'Insertion, deletion and searching in a binary search tree');
-
+bstScenario.cover = 'scenarios/binary-search-tree/cover.png';
 bstScenario.scenes = [
   BstScene,
   Search,

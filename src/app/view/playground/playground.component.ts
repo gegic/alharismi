@@ -11,8 +11,10 @@ import {SceneService} from '../../core/services/scene.service';
 import {Scene} from '../../core/simulation/scene';
 import {MessageService} from 'primeng/api';
 import {Skeleton} from 'primeng/skeleton';
-import {debounceTime} from 'rxjs/operators';
+import {debounceTime, take} from 'rxjs/operators';
 import {PlaygroundService} from '../../core/services/playground.service';
+import {PromptComponent} from '../prompt/prompt.component';
+import {DialogService} from 'primeng/dynamicdialog';
 @Component({
   selector: 'app-playground',
   templateUrl: './playground.component.html',
@@ -36,7 +38,8 @@ export class PlaygroundComponent implements AfterViewInit {
   constructor(private router: Router,
               private scenarioService: ScenarioService,
               private sceneService: SceneService,
-              private messageService: MessageService) { }
+              private messageService: MessageService,
+              private dialogService: DialogService) { }
 
   ngAfterViewInit(): void {
 
@@ -52,7 +55,7 @@ export class PlaygroundComponent implements AfterViewInit {
       .attr('class', 'canvas');
 
 
-    this.scenarioService.initSimulation(g, this.widthHeight);
+    this.scenarioService.initSimulation(g, this.widthHeight, this.promptString(this.dialogService));
     this.scenarioService.startSimulation(this.svg);
     this.scenarioService.simulation.camera.focusSvg();
     this.sceneService.scene.subscribe(async sc => {
@@ -62,14 +65,6 @@ export class PlaygroundComponent implements AfterViewInit {
       }
       this.isVisualizationLoading = false;
     });
-  }
-
-  openInPlayground(): void {
-    const url = this.router.serializeUrl(
-      this.router.createUrlTree([''])
-    );
-
-    window.open(url, '_blank');
   }
 
   setupSvg(): void {
@@ -97,6 +92,18 @@ export class PlaygroundComponent implements AfterViewInit {
 
     this.scenarioService.updateWidthHeight(this.widthHeight);
   }
+
+
+  promptString(dialogService: DialogService): (header: string) => Promise<string> {
+    return (header: string) => {
+      const ref = dialogService.open(PromptComponent, {
+        header,
+        baseZIndex: 1000,
+      });
+      return ref.onClose.pipe(take(1)).toPromise();
+    };
+  }
+
 
   get speed(): number {
     return this._speed;

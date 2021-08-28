@@ -4,6 +4,7 @@ import {Simulation} from '../../../app/core/simulation/simulation';
 import {SimulationArray} from '../../../app/core/simulation/structures/array/simulation-array';
 import {ArrayCell} from '../../../app/core/simulation/structures/array/array-cell';
 import {SimulationNode} from '../../../app/core/simulation/basics/simulation-node';
+import {SimulationStack} from '../../../app/core/simulation/structures/array/simulation-stack';
 
 export class Push implements Scene {
   id = 1;
@@ -13,38 +14,32 @@ export class Push implements Scene {
   set: boolean;
   setupPath: string;
 
-  stack: SimulationArray;
+  stack: SimulationStack;
   index = -1;
   elements = '';
   stackSize = -1;
-  highlightedElement: ArrayCell;
   highlighedValue = -1;
   newElement = 23.11;
 
   async setup(simulation: Simulation): Promise<void> {
     const nodes = simulation.nodeHandler.generateNodes(6);
     simulation.nodeHandler.add(nodes);
-    this.stack = simulation.objectFactory.create('array', 0, 0, 10) as SimulationArray;
+    this.stack = simulation.objectFactory.create('stack', 0, 0, 10) as SimulationStack;
     simulation.arrayHandler.add(this.stack);
 
-    for (let i = 0; i < nodes.length; ++i) {
-      await this.stack.insertAt(nodes[i], i, false);
+    for (const node of nodes) {
+      await this.stack.push(node, false);
     }
-    this.index = this.stack.size;
-    this.highlightedElement = this.stack.data[this.index - 1];
-    this.highlightedElement.highlight('#fdd828');
-    this.highlighedValue = this.highlightedElement.node.value;
+    this.stack.descriptor = 'stack';
     this.stackSize = !!this.stack ? this.stack.size : 10;
-    this.elements = this.stack.data.slice(0, this.index).map(c => c.node.value).join(', ');
+    this.elements = this.stack.data.slice(0, this.stack.size).map(c => c.node.value).join(', ');
+    this.highlighedValue = this.stack.top.node.value;
   }
 
   async play(simulation: Simulation): Promise<void> {
     const node = new SimulationNode(this.newElement, -1, this.stack.x, this.stack.y - 200);
     simulation.nodeHandler.add(node);
-    this.highlightedElement.resetColor();
-    await this.stack.insertAt(node, this.index);
-    this.highlightedElement = this.stack.data[this.index];
-    this.highlightedElement.highlight('#fdd828');
+    await this.stack.push(node);
   }
 
   content(): string {
@@ -70,8 +65,7 @@ export class Push implements Scene {
   successContent(): string {
     return `
   <p>
-    After successfully pushing ${this.newElement} to the stack, the <em>top</em> is now at the index
-    [${this.index}].
+    After successfully pushing ${this.newElement} to the stack, the <em>top</em> is now at the top of the stack.
   </p>
   <small>
     If the stack were full, the push operation would lead to a condition called <em>stack overflow</em>.

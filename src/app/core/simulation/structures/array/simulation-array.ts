@@ -18,13 +18,12 @@ export class SimulationArray implements SimulationNodeDatum, Drawable{
   y: number;
   z: number;
   color: string;
-  isStatic: boolean;
   descriptor: string;
   sorting?: Sort;
   sorted = false;
   busy = false;
 
-  constructor(id: number, x: number, y: number, descriptor?: string){
+  constructor(id: number, x: number, y: number, descriptor?: string) {
     this.id = id;
     this.cellWidth = 100;
     this.cellWidth = 100;
@@ -33,7 +32,6 @@ export class SimulationArray implements SimulationNodeDatum, Drawable{
     this.color = 'black';
     this.x = x;
     this.y = y;
-    this.isStatic = false;
     this.descriptor = descriptor ?? `array${id}`;
   }
 

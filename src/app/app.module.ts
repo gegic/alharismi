@@ -25,6 +25,8 @@ import { VisualizationViewComponent } from './view/visualization-view/visualizat
 import {ToastModule} from 'primeng/toast';
 import {ScrollPanelModule} from 'primeng/scrollpanel';
 import {PlaygroundComponent} from './view/playground/playground.component';
+import { PromptComponent } from './view/prompt/prompt.component';
+import {DialogService, DynamicDialogModule} from 'primeng/dynamicdialog';
 
 @NgModule({
   declarations: [
@@ -35,7 +37,8 @@ import {PlaygroundComponent} from './view/playground/playground.component';
     SceneViewComponent,
     ContentViewComponent,
     VisualizationViewComponent,
-    PlaygroundComponent
+    PlaygroundComponent,
+    PromptComponent
   ],
   imports: [
     BrowserModule,
@@ -55,9 +58,13 @@ import {PlaygroundComponent} from './view/playground/playground.component';
     InputNumberModule,
     SkeletonModule,
     ToastModule,
-    ScrollPanelModule
+    ScrollPanelModule,
+    DynamicDialogModule
   ],
-  providers: [MessageService],
+  providers: [
+    MessageService,
+    DialogService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

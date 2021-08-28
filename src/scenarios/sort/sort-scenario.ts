@@ -7,7 +7,7 @@ import {Merge} from './scenes/merge';
 import {Quick} from './scenes/quick';
 
 const sortScenario = new Scenario('Sort', 'sort', 'Bubble, insertion, selection, merge and quick sort.');
-
+sortScenario.cover = 'scenarios/sort/cover.png';
 sortScenario.scenes = [
   StartScene,
   Bubble,

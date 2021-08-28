@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import {DialogService} from 'primeng/dynamicdialog';
+import {PromptComponent} from '../prompt/prompt.component';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -7,9 +10,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class NavbarComponent implements OnInit {
 
-  constructor() { }
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
   }
 
+  toHomePage(): void {
+    this.router.navigate(['']);
+  }
 }

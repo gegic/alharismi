@@ -23,7 +23,7 @@ export class LinkedListMouse implements MouseHelper<LinkedList> {
         title: 'Prepend',
         disabled: !d.isValid,
         action: async (linkedList: LinkedList) => {
-          const newValue = parseFloat(prompt('Which value to prepend'));
+          const newValue = parseFloat(await this.simulation.prompt('Which value to prepend'));
           if (isNaN(newValue)) {
             alert('Value invalid');
             return;
@@ -37,7 +37,7 @@ export class LinkedListMouse implements MouseHelper<LinkedList> {
         title: 'Append',
         disabled: !d.isValid,
         action: async (linkedList: LinkedList) => {
-          const newValue = parseFloat(prompt('Which value to append'));
+          const newValue = parseFloat(await this.simulation.prompt('Which value to append'));
           if (isNaN(newValue)) {
             alert('Value invalid');
             return;
@@ -51,8 +51,8 @@ export class LinkedListMouse implements MouseHelper<LinkedList> {
         title: 'Insert',
         disabled: !d.isValid,
         action: async (linkedList: LinkedList) => {
-          const newValue = parseFloat(prompt('Which value to insert'));
-          const index = parseFloat(prompt('At which index to insert?'));
+          const newValue = parseFloat(await this.simulation.prompt('Which value to insert'));
+          const index = parseFloat(await this.simulation.prompt('At which index to insert?'));
 
           if (isNaN(newValue) || isNaN(index)) {
             alert('Value invalid');
@@ -84,7 +84,7 @@ export class LinkedListMouse implements MouseHelper<LinkedList> {
         title: 'Delete',
         disabled: d.getData().length <= 2,
         action: async (linkedList: LinkedList) => {
-          const index = parseFloat(prompt('From which index to delete'));
+          const index = parseFloat(await this.simulation.prompt('From which index to delete'));
           if (isNaN(index)) {
             alert('Value invalid');
             return;

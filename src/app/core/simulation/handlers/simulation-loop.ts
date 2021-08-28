@@ -5,7 +5,6 @@ import {defaultRadius} from '../../consts';
 import {NodeHandler} from './node-handler';
 import {PositionHelper} from '../helpers/position-helper';
 import {ColorProvider} from '../providers/color-provider';
-import {SimulationText} from '../basics/simulation-text';
 import {DrawableHandler} from './drawable-handler';
 import {SimulationArray} from '../structures/array/simulation-array';
 import {BinarySearchTree} from '../structures/tree/binary-tree/binary-search-tree/binary-search-tree';
@@ -72,7 +71,6 @@ export class SimulationLoop {
         const svg = d3.select('svg');
         svg.lower();
 
-        // if (window.camera) setTimeout(() => window.camera.reFocus(), 50)
 
         this.nodeElements = svg.selectAll('.node');
         this.arrayElements = svg.selectAll('.array');
